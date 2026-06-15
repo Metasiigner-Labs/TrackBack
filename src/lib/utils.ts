@@ -13,8 +13,40 @@ export function getRankedPoliticians(politicians: Politician[]): Politician[] {
   return politicians.filter((p) => p.hasFinancialData !== false);
 }
 
+export function getDataCompleteness(politician: Politician): {
+  percent: number;
+  tier: NonNullable<Politician["dataCompletenessTier"]>;
+} {
+  if (
+    politician.dataCompletenessPercent !== undefined &&
+    politician.dataCompletenessTier
+  ) {
+    return {
+      percent: politician.dataCompletenessPercent,
+      tier: politician.dataCompletenessTier,
+    };
+  }
+
+  if (!politician.hasFinancialData) {
+    return { percent: 0, tier: "insufficient" };
+  }
+
+  let points = 50;
+  if ((politician.individualContributionTotal || 0) > 0) points += 20;
+  if (politician.topDonors.length >= 10) points += 15;
+  if ((politician.outsideSpending?.length || 0) > 0) points += 15;
+
+  const percent = Math.min(100, points);
+  let tier: NonNullable<Politician["dataCompletenessTier"]> = "medium";
+  if (percent >= 80) tier = "high";
+  else if (percent < 40) tier = "low";
+
+  return { percent, tier };
+}
+
 export function getCleanestPoliticians(politicians: Politician[], limit = 10): Politician[] {
   return getRankedPoliticians(politicians)
+    .filter((p) => getDataCompleteness(p).tier !== "insufficient")
     .sort((a, b) => b.purityScore - a.purityScore)
     .slice(0, limit);
 }

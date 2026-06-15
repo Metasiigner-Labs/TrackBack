@@ -16,6 +16,7 @@ const SECTOR_COLORS: Record<string, string> = {
   "conservative-youth": "bg-red-500",
   fraternal: "bg-teal-600",
   "political-committee": "bg-slate-500",
+  "not-disclosed": "bg-slate-600",
 };
 
 interface IndustryBreakdownProps {

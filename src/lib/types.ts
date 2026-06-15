@@ -77,5 +77,7 @@ export interface Politician {
   controversialIndustries: string[];
   dataCycle?: number;
   hasFinancialData?: boolean;
+  dataCompletenessPercent?: number;
+  dataCompletenessTier?: "high" | "medium" | "low" | "insufficient";
   lastSynced?: string;
 }

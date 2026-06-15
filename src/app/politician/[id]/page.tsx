@@ -9,8 +9,9 @@ import PurityScoreDisplay from "@/components/PurityScoreDisplay";
 import ScoreBreakdown from "@/components/ScoreBreakdown";
 import ScoreChangeIndicator from "@/components/ScoreChangeIndicator";
 import ScoreHistoryChart from "@/components/ScoreHistoryChart";
+import DataCompleteness from "@/components/DataCompleteness";
 import { politicians } from "@/data/politicians";
-import { formatCurrency, getPoliticianById } from "@/lib/utils";
+import { formatCurrency, getDataCompleteness, getPoliticianById } from "@/lib/utils";
 
 interface PoliticianPageProps {
   params: { id: string };
@@ -32,13 +33,15 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
       ? `${politician.state} · District ${politician.district}`
       : politician.state;
 
+  const dataCompleteness = getDataCompleteness(politician);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
       <Link
         href="/"
         className="mb-8 inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-white"
       >
-        ← Back to TrackBack
+        <span aria-hidden="true">{"\u2190"}</span> Back to TrackBack
       </Link>
 
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
@@ -113,7 +116,14 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
         </div>
       </div>
 
-      <div className="mt-12 grid gap-8 lg:grid-cols-2">
+      <div className="mt-8">
+        <DataCompleteness
+          percent={dataCompleteness.percent}
+          tier={dataCompleteness.tier}
+        />
+      </div>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <ScoreBreakdown
           breakdown={politician.scoreBreakdown}
           pacDependencePercent={politician.lobbyistMeetings}

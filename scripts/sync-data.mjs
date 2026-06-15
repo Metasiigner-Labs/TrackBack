@@ -453,6 +453,44 @@ function detectIndustry(employer, name) {
   return classifySource(name, employer).label;
 }
 
+function computeDataCompleteness(params) {
+  const {
+    hasFinancialData,
+    totalDonations,
+    individualContributionTotal,
+    topDonorsCount,
+    outsideSpendingCount,
+    industryBreakdownCount,
+  } = params;
+
+  if (!hasFinancialData || totalDonations < 1000) {
+    return { percent: 0, tier: "insufficient" };
+  }
+
+  let points = 0;
+  if (totalDonations >= 100_000) points += 25;
+  else if (totalDonations >= 10_000) points += 18;
+  else points += 10;
+
+  if (individualContributionTotal >= 100_000) points += 30;
+  else if (individualContributionTotal > 0) points += 15;
+
+  if (topDonorsCount >= 20) points += 20;
+  else if (topDonorsCount >= 5) points += 10;
+
+  if (outsideSpendingCount > 0) points += 10;
+  if (industryBreakdownCount >= 5) points += 15;
+  else if (industryBreakdownCount >= 2) points += 8;
+
+  const percent = Math.min(100, points);
+  let tier = "low";
+  if (percent >= 80) tier = "high";
+  else if (percent >= 55) tier = "medium";
+  else if (percent < 25) tier = "insufficient";
+
+  return { percent, tier };
+}
+
 function detectControversialIndustries(donors, outsideSpending = [], industryBreakdown = []) {
   const found = new Set();
   for (const d of donors) {
@@ -747,6 +785,15 @@ async function main() {
       scorePrev = 0;
     }
 
+    const dataCompleteness = computeDataCompleteness({
+      hasFinancialData: fin.hasFinancialData,
+      totalDonations: fin.totalDonations,
+      individualContributionTotal: indivEntry?.total || 0,
+      topDonorsCount: topDonors.length,
+      outsideSpendingCount: outsideSpending.length,
+      industryBreakdownCount: industryBreakdown.length,
+    });
+
     politicians.push({
       id: bio.toLowerCase(),
       bioguideId: bio,
@@ -776,6 +823,8 @@ async function main() {
       controversialIndustries,
       dataCycle: fin.dataCycleUsed || CYCLE,
       hasFinancialData: fin.hasFinancialData,
+      dataCompletenessPercent: dataCompleteness.percent,
+      dataCompletenessTier: dataCompleteness.tier,
       lastSynced: new Date().toISOString(),
     });
 
