@@ -10,6 +10,7 @@ import {
   mkdirSync,
   createReadStream,
   statSync,
+  unlinkSync,
 } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -25,6 +26,8 @@ const ROOT = join(__dirname, "..");
 const CACHE = join(ROOT, "scripts", "cache");
 const OUT_DIR = join(ROOT, "src", "data");
 const OUT_FILE = join(OUT_DIR, "politicians.json");
+const LOCK_FILE = join(CACHE, ".sync.lock");
+const LOCK_STALE_MS = 2 * 60 * 60 * 1000;
 
 const CYCLE = 2024;
 const PREV_CYCLE = 2022;
@@ -47,8 +50,48 @@ function loadEnv() {
 }
 loadEnv();
 
+if (process.argv.includes("--quick")) {
+  process.env.SKIP_INDIV_SYNC = "1";
+}
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+function isProcessRunning(pid) {
+  if (!pid || Number.isNaN(pid)) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function acquireLock() {
+  mkdirSync(CACHE, { recursive: true });
+  if (existsSync(LOCK_FILE)) {
+    const lockPid = parseInt(readFileSync(LOCK_FILE, "utf8"), 10);
+    const lockAge = Date.now() - statSync(LOCK_FILE).mtimeMs;
+    if (lockAge < LOCK_STALE_MS && isProcessRunning(lockPid)) {
+      console.error(
+        `Sync already running (PID ${lockPid}). Wait for it to finish — do not start a second sync.`
+      );
+      process.exit(1);
+    }
+    unlinkSync(LOCK_FILE);
+  }
+  writeFileSync(LOCK_FILE, String(process.pid));
+}
+
+function releaseLock() {
+  try {
+    if (existsSync(LOCK_FILE) && readFileSync(LOCK_FILE, "utf8") === String(process.pid)) {
+      unlinkSync(LOCK_FILE);
+    }
+  } catch {
+    /* ignore */
+  }
 }
 
 async function downloadFile(url, dest, minBytes = 100) {
@@ -254,10 +297,22 @@ async function loadIndividualContributions(cmteToCands) {
   const extractDir = join(CACHE, `indiv${suffix}`);
 
   await downloadFile(url, zipDest, 1_000_000_000);
-  console.log("  Extracting indiv archive (large — may take several minutes)...");
-  unzipFile(zipDest, extractDir);
-
-  const txtFile = findTxtInDir(extractDir, `itcont${suffix}.txt`);
+  const preferredTxt = join(extractDir, `itcont${suffix}.txt`);
+  let txtFile = existsSync(preferredTxt) ? preferredTxt : null;
+  if (!txtFile) {
+    try {
+      txtFile = findTxtInDir(extractDir, `itcont${suffix}.txt`);
+    } catch {
+      txtFile = null;
+    }
+  }
+  if (!txtFile) {
+    console.log("  Extracting indiv archive (large — may take several minutes)...");
+    unzipFile(zipDest, extractDir);
+    txtFile = findTxtInDir(extractDir, `itcont${suffix}.txt`);
+  } else {
+    console.log(`  Cache hit: ${txtFile.split(/[/\\]/).pop()} (skip extract)`);
+  }
   const byCandidate = new Map();
   let lineCount = 0;
   const rl = createInterface({ input: createReadStream(txtFile), crlfDelay: Infinity });
@@ -601,6 +656,7 @@ async function fetchRecentVotes(personId, topDonors) {
 }
 
 async function main() {
+  acquireLock();
   console.log("TrackBack bulk data sync...");
   mkdirSync(CACHE, { recursive: true });
   mkdirSync(OUT_DIR, { recursive: true });
@@ -758,7 +814,11 @@ async function main() {
   console.log(`Written to ${OUT_FILE}`);
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exitCode = 1;
+  })
+  .finally(() => {
+    releaseLock();
+  });
