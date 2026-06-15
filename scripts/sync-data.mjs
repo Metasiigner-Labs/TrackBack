@@ -9,13 +9,14 @@ import {
   existsSync,
   mkdirSync,
   createReadStream,
-  unlinkSync,
+  statSync,
 } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 import { createInterface } from "readline";
 import { pipeline } from "stream/promises";
+import { Readable } from "stream";
 import { createWriteStream } from "fs";
 import { classifySource, isControversialIndustry, INDUSTRY_TAXONOMY } from "./industry-taxonomy.mjs";
 
@@ -48,16 +49,16 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-async function downloadFile(url, dest) {
-  if (existsSync(dest)) {
+async function downloadFile(url, dest, minBytes = 100) {
+  if (existsSync(dest) && statSync(dest).size >= minBytes) {
     console.log(`  Cache hit: ${dest.split(/[/\\]/).pop()}`);
     return dest;
   }
   console.log(`  Downloading ${url.split("/").pop()}...`);
   const res = await fetch(url, { redirect: "follow" });
   if (!res.ok) throw new Error(`Download failed ${url}: ${res.status}`);
-  const buf = Buffer.from(await res.arrayBuffer());
-  writeFileSync(dest, buf);
+  if (!res.body) throw new Error(`Download failed ${url}: empty body`);
+  await pipeline(Readable.fromWeb(res.body), createWriteStream(dest));
   return dest;
 }
 
@@ -242,7 +243,7 @@ async function loadIndividualContributions(cmteToCands) {
   const zipDest = join(CACHE, `indiv${suffix}.zip`);
   const extractDir = join(CACHE, `indiv${suffix}`);
 
-  await downloadFile(url, zipDest);
+  await downloadFile(url, zipDest, 1_000_000_000);
   console.log("  Extracting indiv archive (large — may take several minutes)...");
   unzipFile(zipDest, extractDir);
 
