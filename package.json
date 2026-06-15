@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync-data": "node scripts/sync-data.mjs"
   },
   "dependencies": {
     "react": "^18",

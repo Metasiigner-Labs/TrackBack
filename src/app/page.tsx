@@ -1,101 +1,109 @@
-import Image from "next/image";
+import Leaderboard from "@/components/Leaderboard";
+import PurityScoreExplanation from "@/components/PurityScoreExplanation";
+import ZipSearchBar from "@/components/ZipSearchBar";
+import { politicians } from "@/data/politicians";
+import {
+  getCleanestPoliticians,
+  getMostCompromisedPoliticians,
+} from "@/lib/utils";
 
-export default function Home() {
+export default function HomePage() {
+  const cleanest = getCleanestPoliticians(politicians, 10);
+  const compromised = getMostCompromisedPoliticians(politicians, 10);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div>
+      <section className="relative overflow-hidden border-b border-slate-800">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-950/20 via-slate-950 to-blue-950/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/20 via-transparent to-transparent" />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-red-400">
+              Public Accountability
+            </p>
+            <h1 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              They track us.{" "}
+              <span className="bg-gradient-to-r from-red-400 via-white to-blue-400 bg-clip-text text-transparent">
+                We track them back.
+              </span>
+            </h1>
+            <p className="mt-6 text-lg text-slate-400 sm:text-xl">
+              Every reported dollar. Every industry. Every vote tied to the
+              money. PACs, pharma, oil, ag, tech, AIPAC-affiliated super PACs,
+              labor, civic groups — all from legal public FEC filings.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-12 max-w-xl">
+            <ZipSearchBar size="large" />
+            <p className="mt-3 text-center text-sm text-slate-500">
+              Works with any valid U.S. zip code
+            </p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      <div className="mx-auto max-w-7xl space-y-16 px-4 py-16 sm:px-6 lg:px-8">
+        <section id="leaderboards" className="scroll-mt-24">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-white">
+              National Leaderboards
+            </h2>
+            <p className="mt-2 text-slate-400">
+              Who&apos;s cleanest — and who&apos;s most compromised — in
+              Congress right now
+            </p>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            <Leaderboard
+              title="Cleanest in Congress"
+              politicians={cleanest}
+              variant="clean"
+            />
+            <Leaderboard
+              title="Most Compromised"
+              politicians={compromised}
+              variant="compromised"
+            />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 sm:p-10">
+          <h2 className="text-2xl font-bold text-white">
+            What we expose — and how
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-400">
+            TrackBack maps every FEC-reported contribution we can classify into
+            25+ sectors: pro-Israel advocacy spenders (UDP, DMFI, NorPAC),
+            big pharma, fossil fuels, agriculture, fintech, defense, labor
+            unions, NAACP-style civic orgs, Turning Point and similar groups,
+            fraternal alumni networks, and more. No accounts. No spin. Just
+            public records, linked to voting behavior.
+          </p>
+          <ul className="mt-6 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
+            <li className="flex gap-2">
+              <span className="text-red-400">→</span>
+              Committee &amp; PAC contributions (FEC pas2)
+            </li>
+            <li className="flex gap-2">
+              <span className="text-red-400">→</span>
+              Itemized individual donors + employers (FEC indiv)
+            </li>
+            <li className="flex gap-2">
+              <span className="text-red-400">→</span>
+              Outside super PAC spending for/against (FEC IE)
+            </li>
+            <li className="flex gap-2">
+              <span className="text-red-400">→</span>
+              Nay votes on donor-industry legislation (GovTrack)
+            </li>
+          </ul>
+        </section>
+
+        <PurityScoreExplanation />
+      </div>
     </div>
   );
 }
