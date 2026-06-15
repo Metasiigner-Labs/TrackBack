@@ -34,6 +34,8 @@ const PRO_ISRAEL_SPENDER_PATTERNS =
 
 const TOP_DONOR_LIMIT = 25;
 const TOP_IE_LIMIT = 12;
+const MAX_DONORS_PER_CANDIDATE = 150;
+const DONOR_PRUNE_TARGET = 100;
 
 function loadEnv() {
   const envPath = join(ROOT, ".env.local");
@@ -232,6 +234,14 @@ async function loadCclLinkages(targetCandIds) {
   return cmteToCands;
 }
 
+function pruneDonorMap(donors) {
+  if (donors.size <= MAX_DONORS_PER_CANDIDATE) return;
+  const entries = [...donors.entries()].sort((a, b) => a[1].amount - b[1].amount);
+  for (let i = 0; i < entries.length - DONOR_PRUNE_TARGET; i++) {
+    donors.delete(entries[i][0]);
+  }
+}
+
 async function loadIndividualContributions(cmteToCands) {
   if (process.env.SKIP_INDIV_SYNC === "1") {
     console.log("  Skipping indiv bulk (SKIP_INDIV_SYNC=1)");
@@ -284,13 +294,13 @@ async function loadIndividualContributions(cmteToCands) {
       const existingSector = entry.industries.get(sector.id);
       if (existingSector) {
         existingSector.amount += amount;
-        existingSector.sources.add(name);
+        existingSector.sourceCount += 1;
       } else {
         entry.industries.set(sector.id, {
           id: sector.id,
           label: sector.label,
           amount,
-          sources: new Set([name]),
+          sourceCount: 1,
         });
       }
 
@@ -298,6 +308,7 @@ async function loadIndividualContributions(cmteToCands) {
       if (existingDonor) {
         existingDonor.amount += amount;
       } else {
+        if (entry.donors.size >= MAX_DONORS_PER_CANDIDATE) pruneDonorMap(entry.donors);
         entry.donors.set(donorKey, {
           name: titleCase(name),
           industry: sector.label,
@@ -338,11 +349,11 @@ function mergeTopDonors(pas2Donors, indivEntry, limit = TOP_DONOR_LIMIT) {
 function buildIndustryBreakdown({ pas2Donors, outsideSpending, indivEntry, totalDonations }) {
   const sectors = new Map();
 
-  const add = (id, label, amount, sourceName) => {
-    if (!sectors.has(id)) sectors.set(id, { id, label, amount: 0, sources: new Set() });
+  const add = (id, label, amount, sourceCount = 0) => {
+    if (!sectors.has(id)) sectors.set(id, { id, label, amount: 0, sourceCount: 0 });
     const s = sectors.get(id);
     s.amount += amount;
-    if (sourceName) s.sources.add(sourceName);
+    s.sourceCount += sourceCount;
   };
 
   for (const donor of pas2Donors) {
@@ -350,17 +361,17 @@ function buildIndustryBreakdown({ pas2Donors, outsideSpending, indivEntry, total
       donor.type === "Individual"
         ? classifySource(donor.name, donor.employer || "")
         : classifySource(donor.name, "");
-    add(sector.id, sector.label, donor.amount, donor.name);
+    add(sector.id, sector.label, donor.amount, 1);
   }
 
   for (const ie of outsideSpending) {
     const sector = classifySource(ie.spender, "");
-    add(sector.id, sector.label, ie.amount, ie.spender);
+    add(sector.id, sector.label, ie.amount, 1);
   }
 
   if (indivEntry?.industries) {
     for (const [, data] of indivEntry.industries) {
-      add(data.id, data.label, data.amount, [...data.sources].slice(0, 3).join(", "));
+      add(data.id, data.label, data.amount, data.sourceCount || 1);
     }
   }
 
@@ -373,7 +384,7 @@ function buildIndustryBreakdown({ pas2Donors, outsideSpending, indivEntry, total
       label: s.label,
       amount: Math.round(s.amount),
       percent: Math.round((s.amount / denom) * 1000) / 10,
-      sourceCount: s.sources.size,
+      sourceCount: s.sourceCount,
     }))
     .filter((s) => s.amount > 0)
     .sort((a, b) => b.amount - a.amount);
