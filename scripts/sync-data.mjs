@@ -21,7 +21,8 @@ import { Readable } from "stream";
 import { createWriteStream } from "fs";
 import { classifySource, isControversialIndustry, INDUSTRY_TAXONOMY } from "./industry-taxonomy.mjs";
 import { buildLobbyingDataForPoliticians } from "./lda-sync.mjs";
-import { applyLobbyingScoreRecalc } from "./recalc-scores.mjs";
+import { calculatePurityScore } from "./score-algorithm.mjs";
+import { applyScoreRecalcToAll } from "./score-algorithm.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -580,22 +581,11 @@ function getFecId(legislator, term) {
 }
 
 function calculateScores(params) {
-  const { totalOutsideMoney, totalDonations, pacDependenceScore, controversialIndustries, independenceVotes } = params;
-  const outsideMoneyPercent = totalDonations > 0 ? Math.round((totalOutsideMoney / totalDonations) * 100) : 0;
-  const baseScore = Math.max(0, 100 - outsideMoneyPercent);
-  let votingBonus = 0;
-  if (independenceVotes >= 5) votingBonus = 20;
-  else if (independenceVotes >= 3) votingBonus = 15;
-  else if (independenceVotes >= 1) votingBonus = 10;
-  let pacPenalty = 0;
-  if (pacDependenceScore >= 50) pacPenalty = 20;
-  else if (pacDependenceScore >= 35) pacPenalty = 15;
-  else if (pacDependenceScore >= 20) pacPenalty = 10;
-  else if (pacDependenceScore >= 10) pacPenalty = 5;
-  const industryPenalty = Math.min(controversialIndustries.length * 6, 18);
-  const raw = baseScore + votingBonus - pacPenalty - industryPenalty;
-  const finalScore = Math.max(8, Math.min(100, Math.round(raw)));
-  return { baseScore, outsideMoneyPercent, votingBonus, lobbyistMeetingPenalty: pacPenalty, controversialIndustryPenalty: industryPenalty, finalScore };
+  return calculatePurityScore({
+    ...params,
+    lobbyingExposurePenalty: 0,
+    hasFinancialData: true,
+  });
 }
 
 function buildScoreHistory(s22, s24) {
@@ -864,7 +854,7 @@ async function main() {
   politicians.filter((p) => !p.hasFinancialData).forEach((p) => { p.nationalRank = ranked.length + 1; });
 
   const withLobbying = await buildLobbyingDataForPoliticians(politicians, CACHE);
-  const politiciansWithLobbying = applyLobbyingScoreRecalc(withLobbying);
+  const politiciansWithLobbying = applyScoreRecalcToAll(withLobbying);
 
   const output = {
     meta: {

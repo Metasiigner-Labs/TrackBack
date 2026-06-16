@@ -3,11 +3,11 @@ export const PURITY_SCORE_EXPLANATION = {
   summary:
     "A 0–100 measure of how independent a politician is from special interest money. Higher is cleaner.",
   formula:
-    "Base score = 100 minus the percentage of total receipts from non-individual sources (PACs, party committees, and transfers) per FEC filings.",
+    "Base score = 100 minus the percentage of total receipts from non-individual sources (PACs, party committees, transfers) per FEC filings. This is the primary signal — we do not double-penalize the same PAC money twice.",
   bonuses:
-    "Nay votes on legislation aligned with top donor industries can add 10–20 points, based on GovTrack roll call records.",
+    "Nay votes on legislation aligned with top donor industries add 8–15 points (GovTrack roll calls).",
   penalties:
-    "Deductions for high PAC dependence, controversial industries (tobacco, fossil fuels, private prisons, pharma, defense, finance, pro-Israel advocacy), and registered lobbying exposure (Senate LDA + tracked influence groups like AIPAC, UDP, DMFI, NorPAC, PhRMA, API).",
+    "Additional deductions only for independent signals: excess PAC dependence beyond the base share, controversial industries (tobacco, oil, prisons, pharma, defense, pro-Israel advocacy), and direct lobbying ties (FEC + Senate LDA matches to groups like AIPAC, UDP, DMFI, NorPAC). Scores spread naturally — no mass floor at zero.",
 };
 
 export function getScoreColor(score: number): string {
