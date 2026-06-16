@@ -36,6 +36,17 @@ export default function ScoreBreakdown({
       description: "Money from controversial industries (FEC donor data)",
       positive: false,
     },
+    ...(breakdown.lobbyingExposurePenalty
+      ? [
+          {
+            label: "Lobbying Exposure Penalty",
+            value: -breakdown.lobbyingExposurePenalty,
+            description:
+              "Tracked lobbying org ties, influence groups, pro-Israel outside spending (FEC + LDA)",
+            positive: false as const,
+          },
+        ]
+      : []),
   ];
 
   return (

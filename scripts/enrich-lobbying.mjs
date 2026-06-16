@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { buildLobbyingDataForPoliticians } from "./lda-sync.mjs";
+import { applyLobbyingScoreRecalc } from "./recalc-scores.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -19,7 +20,7 @@ console.log(`Enriching ${data.politicians.length} politicians with LDA data...`)
 const enriched = await buildLobbyingDataForPoliticians(data.politicians, CACHE);
 const withOrgs = enriched.filter((p) => (p.lobbyingOrganizations || []).length > 0).length;
 
-data.politicians = enriched;
+data.politicians = applyLobbyingScoreRecalc(enriched);
 data.meta.syncedAt = new Date().toISOString();
 writeFileSync(OUT_FILE, JSON.stringify(data, null, 2));
 

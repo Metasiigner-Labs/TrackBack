@@ -4,7 +4,7 @@ export default function DataDisclaimer() {
   const syncedDate = dataMeta?.syncedAt
     ? new Date(dataMeta.syncedAt).toLocaleDateString("en-US", {
         year: "numeric",
-        month: "long",
+        month: "short",
         day: "numeric",
       })
     : null;
@@ -14,16 +14,7 @@ export default function DataDisclaimer() {
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <p className="text-sm text-blue-200">
           <span className="font-semibold text-white">Live public data.</span>{" "}
-          Campaign finance from the{" "}
-          <a
-            href="https://www.fec.gov/"
-            className="underline hover:text-white"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            FEC
-          </a>
-          , voting records from{" "}
+          FEC {dataMeta?.cycle || "2024"} cycle · Senate LDA lobbying ·{" "}
           <a
             href="https://www.govtrack.us/"
             className="underline hover:text-white"
@@ -31,8 +22,8 @@ export default function DataDisclaimer() {
             rel="noopener noreferrer"
           >
             GovTrack
-          </a>
-          , photos from{" "}
+          </a>{" "}
+          votes ·{" "}
           <a
             href="https://www.congress.gov/"
             className="underline hover:text-white"
@@ -40,15 +31,17 @@ export default function DataDisclaimer() {
             rel="noopener noreferrer"
           >
             Congress.gov
-          </a>
-          .
-          {syncedDate && (
-            <span className="text-blue-300/80"> Last updated {syncedDate}.</span>
-          )}
+          </a>{" "}
+          photos.
+          {syncedDate ? (
+            <span className="text-blue-300/80">
+              {" "}
+              Synced from public filings {syncedDate}.
+            </span>
+          ) : null}
         </p>
         <p className="shrink-0 text-xs text-blue-300/60">
-          {dataMeta?.cycle || "2024"} election cycle · {dataMeta?.count || "—"}{" "}
-          members tracked
+          {dataMeta?.count || "—"} members · 137 tracked lobbying orgs
         </p>
       </div>
     </div>

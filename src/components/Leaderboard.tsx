@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Politician } from "@/lib/types";
 import { getScoreColor } from "@/lib/purity-score";
+import { getScoreSummaryLine, getTopScoreHurters } from "@/lib/score-summary";
 import PartyBadge from "./PartyBadge";
 
 interface LeaderboardProps {
@@ -26,39 +28,76 @@ export default function Leaderboard({
         <h2 className={`text-lg font-bold ${accentColor}`}>{title}</h2>
         <p className="mt-1 text-sm text-slate-400">
           {variant === "clean"
-            ? "Highest Purity Scores in Congress"
-            : "Lowest Purity Scores in Congress"}
+            ? "Highest Purity Scores — FEC 2024 cycle"
+            : "Lowest Purity Scores — heavy PAC & industry exposure"}
         </p>
       </div>
       <ol className="divide-y divide-slate-800">
-        {politicians.map((politician, index) => (
-          <li key={politician.id}>
-            <Link
-              href={`/politician/${politician.id}`}
-              className="flex items-center gap-4 px-5 py-3 transition hover:bg-slate-800/50"
-            >
-              <span className="w-6 text-center text-sm font-bold text-slate-500">
-                {index + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-white">
-                  {politician.name}
-                </p>
-                <div className="mt-0.5 flex items-center gap-2">
-                  <PartyBadge party={politician.party} />
-                  <span className="text-xs text-slate-500">
-                    {politician.chamber} · {politician.state}
-                  </span>
-                </div>
-              </div>
-              <span
-                className={`font-bold tabular-nums ${getScoreColor(politician.purityScore)}`}
+        {politicians.map((politician, index) => {
+          const hurters = getTopScoreHurters(politician);
+          const summary = getScoreSummaryLine(politician);
+
+          return (
+            <li key={politician.id}>
+              <Link
+                href={`/politician/${politician.id}`}
+                className="flex gap-4 px-5 py-4 transition hover:bg-slate-800/50"
               >
-                {politician.purityScore}
-              </span>
-            </Link>
-          </li>
-        ))}
+                <span className="w-6 shrink-0 pt-2 text-center text-sm font-bold text-slate-500">
+                  {index + 1}
+                </span>
+
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-800">
+                  <Image
+                    src={politician.photoUrl}
+                    alt={politician.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-white">
+                        {politician.name}
+                      </p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                        <PartyBadge party={politician.party} />
+                        <span className="text-xs text-slate-500">
+                          {politician.chamber} · {politician.state}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 font-bold tabular-nums ${getScoreColor(politician.purityScore)}`}
+                    >
+                      {politician.purityScore}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 line-clamp-2 text-xs text-slate-400">
+                    {summary}
+                  </p>
+
+                  {hurters.length > 0 && variant === "compromised" && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {hurters.map((h) => (
+                        <span
+                          key={h}
+                          className="rounded bg-red-950/40 px-2 py-0.5 text-xs text-red-300"
+                        >
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );

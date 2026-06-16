@@ -11,7 +11,15 @@ import ScoreBreakdown from "@/components/ScoreBreakdown";
 import ScoreChangeIndicator from "@/components/ScoreChangeIndicator";
 import ScoreHistoryChart from "@/components/ScoreHistoryChart";
 import DataCompleteness from "@/components/DataCompleteness";
+import LobbyingHighlights from "@/components/LobbyingHighlights";
+import MoneySourceBar from "@/components/MoneySourceBar";
 import { politicians } from "@/data/politicians";
+import {
+  getInfluenceHighlights,
+  getIndividualVsPacPercent,
+  getScoreSummaryLine,
+} from "@/lib/score-summary";
+import { getScoreLabel } from "@/lib/purity-score";
 import { formatCurrency, getDataCompleteness, getPoliticianById } from "@/lib/utils";
 
 interface PoliticianPageProps {
@@ -35,6 +43,9 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
       : politician.state;
 
   const dataCompleteness = getDataCompleteness(politician);
+  const scoreSummary = getScoreSummaryLine(politician);
+  const moneySplit = getIndividualVsPacPercent(politician);
+  const influenceHighlights = getInfluenceHighlights(politician);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -46,13 +57,13 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
       </Link>
 
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
-        <div className="relative mx-auto h-40 w-40 shrink-0 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:mx-0">
+        <div className="relative mx-auto h-48 w-48 shrink-0 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 sm:mx-0">
           <Image
             src={politician.photoUrl}
             alt={politician.name}
             fill
             className="object-cover"
-            sizes="160px"
+            sizes="192px"
             priority
           />
         </div>
@@ -75,9 +86,16 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
               </span>{" "}
               of {politicians.length}
             </span>
+            <span className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-300">
+              {getScoreLabel(politician.purityScore)}
+            </span>
             <ScoreChangeIndicator change={politician.scoreChange} />
           </div>
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 rounded-lg border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-300">
+            <span className="font-medium text-white">Why this score: </span>
+            {scoreSummary}
+          </p>
+          <p className="mt-3 text-sm text-slate-500">
             Non-individual contributions:{" "}
             <span className="font-mono text-slate-300">
               {formatCurrency(politician.totalOutsideMoney)}
@@ -124,6 +142,22 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
         />
       </div>
 
+      <div className="mt-8">
+        <MoneySourceBar
+          individualPercent={moneySplit.individualPercent}
+          pacPercent={moneySplit.pacPercent}
+          individualAmount={moneySplit.individualAmount}
+          pacAmount={moneySplit.pacAmount}
+          cycle={politician.dataCycle}
+        />
+      </div>
+
+      {influenceHighlights.length > 0 && (
+        <div className="mt-8">
+          <LobbyingHighlights highlights={influenceHighlights} />
+        </div>
+      )}
+
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <ScoreBreakdown
           breakdown={politician.scoreBreakdown}
@@ -131,6 +165,19 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
         />
         <ScoreHistoryChart history={politician.scoreHistory} />
       </div>
+
+      {politician.topDonors.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-xl font-bold text-white">Top 5 Donors</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Highest itemized FEC contributors this cycle — PACs, committees, and
+            individuals with employers.
+          </p>
+          <div className="mt-6">
+            <DonorTable donors={politician.topDonors} limit={5} />
+          </div>
+        </section>
+      )}
 
       {politician.industryBreakdown &&
         politician.industryBreakdown.length > 0 && (
@@ -232,33 +279,28 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
           </section>
         )}
 
-      <section className="mt-12">
-        <h2 className="text-xl font-bold text-white">Top Donors</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Top {politician.topDonors.length} itemized donors — PACs, committees,
-          and individuals with employers from FEC filings (
-          {politician.dataCycle || "2024"} cycle).
-          {politician.individualContributionTotal ? (
-            <>
-              {" "}
-              Individual itemized total:{" "}
-              <span className="font-mono text-slate-300">
-                {formatCurrency(politician.individualContributionTotal)}
-              </span>
-              .
-            </>
-          ) : null}
-        </p>
-        <div className="mt-6">
-          {politician.topDonors.length > 0 ? (
+      {politician.topDonors.length > 5 && (
+        <section className="mt-12">
+          <h2 className="text-xl font-bold text-white">All Top Donors</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Full donor list ({politician.topDonors.length} entries) from FEC{" "}
+            {politician.dataCycle || "2024"} filings.
+            {politician.individualContributionTotal ? (
+              <>
+                {" "}
+                Individual itemized total:{" "}
+                <span className="font-mono text-slate-300">
+                  {formatCurrency(politician.individualContributionTotal)}
+                </span>
+                .
+              </>
+            ) : null}
+          </p>
+          <div className="mt-6">
             <DonorTable donors={politician.topDonors} />
-          ) : (
-            <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-6 text-center text-slate-500">
-              No itemized donor data available for this cycle.
-            </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       <section className="mt-12">
         <h2 className="text-xl font-bold text-white">

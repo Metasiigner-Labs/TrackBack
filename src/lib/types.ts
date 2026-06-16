@@ -58,6 +58,7 @@ export interface ScoreBreakdown {
   votingBonus: number;
   lobbyistMeetingPenalty: number;
   controversialIndustryPenalty: number;
+  lobbyingExposurePenalty?: number;
   finalScore: number;
 }
 

@@ -53,6 +53,8 @@ export function getCleanestPoliticians(politicians: Politician[], limit = 10): P
 
 export function getMostCompromisedPoliticians(politicians: Politician[], limit = 10): Politician[] {
   return getRankedPoliticians(politicians)
+    .filter((p) => getDataCompleteness(p).tier !== "insufficient")
+    .filter((p) => p.purityScore > 0 || p.topDonors.length >= 3)
     .sort((a, b) => a.purityScore - b.purityScore)
     .slice(0, limit);
 }

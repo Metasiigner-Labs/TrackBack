@@ -7,7 +7,7 @@ export const PURITY_SCORE_EXPLANATION = {
   bonuses:
     "Nay votes on legislation aligned with top donor industries can add 10–20 points, based on GovTrack roll call records.",
   penalties:
-    "Deductions for high PAC dependence and contributions from controversial industries (tobacco, fossil fuels, private prisons, pharma, defense, finance) identified in FEC donor data.",
+    "Deductions for high PAC dependence, controversial industries (tobacco, fossil fuels, private prisons, pharma, defense, finance, pro-Israel advocacy), and registered lobbying exposure (Senate LDA + tracked influence groups like AIPAC, UDP, DMFI, NorPAC, PhRMA, API).",
 };
 
 export function getScoreColor(score: number): string {

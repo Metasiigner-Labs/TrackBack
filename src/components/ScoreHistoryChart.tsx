@@ -26,7 +26,10 @@ export default function ScoreHistoryChart({ history }: ScoreHistoryChartProps) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6">
       <h3 className="text-lg font-semibold text-white">Score History</h3>
-      <p className="mt-1 text-sm text-slate-400">6-month trend (placeholder)</p>
+      <p className="mt-1 text-sm text-slate-400">
+        Estimated {history[0]?.month}–{history[history.length - 1]?.month} trend from
+        prior vs current FEC cycle scores
+      </p>
 
       <div className="relative mt-6 h-40 w-full">
         <svg

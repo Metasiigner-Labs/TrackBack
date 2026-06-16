@@ -21,6 +21,7 @@ import { Readable } from "stream";
 import { createWriteStream } from "fs";
 import { classifySource, isControversialIndustry, INDUSTRY_TAXONOMY } from "./industry-taxonomy.mjs";
 import { buildLobbyingDataForPoliticians } from "./lda-sync.mjs";
+import { applyLobbyingScoreRecalc } from "./recalc-scores.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -839,7 +840,8 @@ async function main() {
   ranked.forEach((p, i) => { p.nationalRank = i + 1; });
   politicians.filter((p) => !p.hasFinancialData).forEach((p) => { p.nationalRank = ranked.length + 1; });
 
-  const politiciansWithLobbying = await buildLobbyingDataForPoliticians(politicians, CACHE);
+  const withLobbying = await buildLobbyingDataForPoliticians(politicians, CACHE);
+  const politiciansWithLobbying = applyLobbyingScoreRecalc(withLobbying);
 
   const output = {
     meta: {

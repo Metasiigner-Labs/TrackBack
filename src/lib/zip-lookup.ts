@@ -80,9 +80,10 @@ export async function lookupByZip(
     ]?.[0];
   const districtNum = districtGeo?.CD119 || null;
 
-  const senators = politicians.filter(
-    (p) => p.chamber === "Senate" && p.state === stateAbbr
-  );
+  const senators = politicians
+    .filter((p) => p.chamber === "Senate" && p.state === stateAbbr)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, 2);
 
   let representative: Politician | null = null;
   if (districtNum) {

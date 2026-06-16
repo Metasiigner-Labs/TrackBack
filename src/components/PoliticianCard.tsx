@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Politician } from "@/lib/types";
+import { getScoreSummaryLine } from "@/lib/score-summary";
 import { formatCurrency } from "@/lib/utils";
 import PartyBadge from "./PartyBadge";
 import PurityScoreDisplay from "./PurityScoreDisplay";
@@ -8,31 +9,30 @@ import ScoreChangeIndicator from "./ScoreChangeIndicator";
 
 interface PoliticianCardProps {
   politician: Politician;
-  compact?: boolean;
 }
 
-export default function PoliticianCard({
-  politician,
-  compact = false,
-}: PoliticianCardProps) {
+export default function PoliticianCard({ politician }: PoliticianCardProps) {
   const location =
     politician.chamber === "House"
       ? `${politician.state}-${politician.district === "At-Large" ? "AL" : politician.district}`
       : politician.state;
+
+  const topDonors = politician.topDonors.slice(0, 2);
+  const summary = getScoreSummaryLine(politician);
 
   return (
     <Link
       href={`/politician/${politician.id}`}
       className="group block rounded-xl border border-slate-800 bg-slate-900/50 p-5 transition hover:border-slate-600 hover:bg-slate-900"
     >
-      <div className={`flex gap-4 ${compact ? "flex-col sm:flex-row" : ""}`}>
-        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-800">
+      <div className="flex gap-4">
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-800">
           <Image
             src={politician.photoUrl}
             alt={politician.name}
             fill
             className="object-cover"
-            sizes="80px"
+            sizes="96px"
           />
         </div>
 
@@ -54,9 +54,11 @@ export default function PoliticianCard({
             </div>
           </div>
 
+          <p className="mt-2 line-clamp-2 text-xs text-slate-400">{summary}</p>
+
           <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
             <span className="text-slate-400">
-              National rank{" "}
+              Rank{" "}
               <span className="font-semibold text-white">
                 #{politician.nationalRank}
               </span>
@@ -64,21 +66,24 @@ export default function PoliticianCard({
             <ScoreChangeIndicator change={politician.scoreChange} />
           </div>
 
-          {!compact && (
-            <div className="mt-4 border-t border-slate-800 pt-4">
+          {topDonors.length > 0 && (
+            <div className="mt-4 border-t border-slate-800 pt-3">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
-                Top Donors
+                Top donors
               </p>
               <ul className="space-y-1.5">
-                {politician.topDonors.slice(0, 3).map((donor, i) => (
+                {topDonors.map((donor, i) => (
                   <li
                     key={i}
-                    className="flex items-center justify-between text-sm"
+                    className="flex items-center justify-between gap-2 text-sm"
                   >
-                    <span className="truncate text-slate-300">
+                    <span className="min-w-0 truncate text-slate-300">
                       {donor.name}
+                      <span className="ml-1 text-xs text-slate-500">
+                        ({donor.industry})
+                      </span>
                     </span>
-                    <span className="ml-2 shrink-0 font-mono text-slate-400">
+                    <span className="shrink-0 font-mono text-slate-400">
                       {formatCurrency(donor.amount)}
                     </span>
                   </li>
@@ -86,6 +91,10 @@ export default function PoliticianCard({
               </ul>
             </div>
           )}
+
+          <p className="mt-3 text-xs font-medium text-blue-400 group-hover:text-blue-300">
+            View full profile →
+          </p>
         </div>
       </div>
     </Link>

@@ -3,6 +3,8 @@ import ZipSearchBar from "@/components/ZipSearchBar";
 import { politicians } from "@/data/politicians";
 import { lookupByZip } from "@/lib/zip-lookup";
 
+export const dynamic = "force-dynamic";
+
 interface FindPageProps {
   searchParams: { zip?: string };
 }
