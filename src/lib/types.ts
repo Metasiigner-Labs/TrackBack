@@ -24,6 +24,20 @@ export interface OutsideSpending {
   isProIsraelAdvocacy?: boolean;
 }
 
+export type LobbyingConnection = "fec_donor" | "lda_activity" | "fec_and_lobbying";
+
+export interface LobbyingOrganization {
+  id: string;
+  name: string;
+  sector: string;
+  connection: LobbyingConnection;
+  lobbyingSpend2024: number;
+  filingCount: number;
+  issues: string[];
+  detail: string;
+  fecAmount: number;
+}
+
 export interface VoteAgainstDonor {
   billName: string;
   billNumber: string;
@@ -79,5 +93,7 @@ export interface Politician {
   hasFinancialData?: boolean;
   dataCompletenessPercent?: number;
   dataCompletenessTier?: "high" | "medium" | "low" | "insufficient";
+  lobbyingOrganizations?: LobbyingOrganization[];
+  totalLobbyingExposure?: number;
   lastSynced?: string;
 }

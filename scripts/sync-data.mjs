@@ -20,6 +20,7 @@ import { pipeline } from "stream/promises";
 import { Readable } from "stream";
 import { createWriteStream } from "fs";
 import { classifySource, isControversialIndustry, INDUSTRY_TAXONOMY } from "./industry-taxonomy.mjs";
+import { buildLobbyingDataForPoliticians } from "./lda-sync.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -52,6 +53,7 @@ loadEnv();
 
 if (process.argv.includes("--quick")) {
   process.env.SKIP_INDIV_SYNC = "1";
+  process.env.SKIP_LDA_SYNC = "1";
 }
 
 function sleep(ms) {
@@ -837,6 +839,8 @@ async function main() {
   ranked.forEach((p, i) => { p.nationalRank = i + 1; });
   politicians.filter((p) => !p.hasFinancialData).forEach((p) => { p.nationalRank = ranked.length + 1; });
 
+  const politiciansWithLobbying = await buildLobbyingDataForPoliticians(politicians, CACHE);
+
   const output = {
     meta: {
       syncedAt: new Date().toISOString(),
@@ -852,9 +856,10 @@ async function main() {
         "unitedstates/congress-legislators (public domain)",
         "GovTrack.us — roll call voting records",
         "Congress.gov Bioguide — official photos",
+        "Senate LDA API — registered lobbying organizations (lda.senate.gov)",
       ],
     },
-    politicians,
+    politicians: politiciansWithLobbying,
   };
 
   writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));

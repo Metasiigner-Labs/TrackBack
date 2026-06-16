@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import DonorTable from "@/components/DonorTable";
 import IndustryBreakdown from "@/components/IndustryBreakdown";
+import LobbyingOrganizationsTable from "@/components/LobbyingOrganizationsTable";
 import OutsideSpendingTable from "@/components/OutsideSpendingTable";
 import PartyBadge from "@/components/PartyBadge";
 import PurityScoreDisplay from "@/components/PurityScoreDisplay";
@@ -190,6 +191,45 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
           </div>
         </section>
       )}
+
+      {politician.lobbyingOrganizations &&
+        politician.lobbyingOrganizations.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-xl font-bold text-white">
+              Registered Lobbying Organizations
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Named lobbying groups linked to this office via FEC donor records
+              and Senate LDA filings — AIPAC, PhRMA, oil, pharma, defense,
+              tech, and other registered interests (2024 cycle).
+            </p>
+            {politician.totalLobbyingExposure ? (
+              <p className="mt-2 text-sm text-slate-400">
+                Combined org lobbying spend (matched groups):{" "}
+                <span className="font-mono font-semibold text-slate-200">
+                  {formatCurrency(politician.totalLobbyingExposure)}
+                </span>
+              </p>
+            ) : null}
+            <div className="mt-6">
+              <LobbyingOrganizationsTable
+                organizations={politician.lobbyingOrganizations}
+              />
+            </div>
+            <p className="mt-3 text-xs text-slate-600">
+              Source:{" "}
+              <a
+                href="https://lda.senate.gov/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline hover:text-blue-400"
+              >
+                Senate LDA disclosures
+              </a>{" "}
+              + FEC itemized contributions.
+            </p>
+          </section>
+        )}
 
       <section className="mt-12">
         <h2 className="text-xl font-bold text-white">Top Donors</h2>
