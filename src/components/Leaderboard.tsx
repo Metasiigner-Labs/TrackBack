@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Politician } from "@/lib/types";
-import { getScoreColor } from "@/lib/purity-score";
-import { getScoreSummaryLine, getTopScoreHurters } from "@/lib/score-summary";
+import {
+  getLeaderboardDonorTags,
+  getScoreSummaryLine,
+} from "@/lib/score-summary";
+import LeaderboardScoreTooltip from "./LeaderboardScoreTooltip";
 import PartyBadge from "./PartyBadge";
 
 interface LeaderboardProps {
@@ -19,6 +22,10 @@ export default function Leaderboard({
   const accentColor = variant === "clean" ? "text-emerald-400" : "text-red-400";
   const borderAccent =
     variant === "clean" ? "border-emerald-500/30" : "border-red-500/30";
+  const tagClass =
+    variant === "clean"
+      ? "bg-emerald-950/40 text-emerald-300"
+      : "bg-red-950/40 text-red-300";
 
   return (
     <div
@@ -28,13 +35,13 @@ export default function Leaderboard({
         <h2 className={`text-lg font-bold ${accentColor}`}>{title}</h2>
         <p className="mt-1 text-sm text-slate-400">
           {variant === "clean"
-            ? "Highest Purity Scores — FEC 2024 cycle"
-            : "Lowest Purity Scores — heavy PAC & industry exposure"}
+            ? "Highest Purity Scores — hover score for FEC formula"
+            : "Lowest Purity Scores — top industries & donors dragging score"}
         </p>
       </div>
       <ol className="divide-y divide-slate-800">
         {politicians.map((politician, index) => {
-          const hurters = getTopScoreHurters(politician);
+          const donorTags = getLeaderboardDonorTags(politician, variant);
           const summary = getScoreSummaryLine(politician);
 
           return (
@@ -70,25 +77,21 @@ export default function Leaderboard({
                         </span>
                       </div>
                     </div>
-                    <span
-                      className={`shrink-0 font-bold tabular-nums ${getScoreColor(politician.purityScore)}`}
-                    >
-                      {politician.purityScore}
-                    </span>
+                    <LeaderboardScoreTooltip politician={politician} />
                   </div>
 
                   <p className="mt-2 line-clamp-2 text-xs text-slate-400">
                     {summary}
                   </p>
 
-                  {hurters.length > 0 && variant === "compromised" && (
+                  {donorTags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      {hurters.map((h) => (
+                      {donorTags.map((tag) => (
                         <span
-                          key={h}
-                          className="rounded bg-red-950/40 px-2 py-0.5 text-xs text-red-300"
+                          key={tag}
+                          className={`rounded px-2 py-0.5 text-xs ${tagClass}`}
                         >
-                          {h}
+                          {tag}
                         </span>
                       ))}
                     </div>

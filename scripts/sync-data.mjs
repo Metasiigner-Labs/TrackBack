@@ -592,8 +592,9 @@ function calculateScores(params) {
   else if (pacDependenceScore >= 35) pacPenalty = 15;
   else if (pacDependenceScore >= 20) pacPenalty = 10;
   else if (pacDependenceScore >= 10) pacPenalty = 5;
-  const industryPenalty = Math.min(controversialIndustries.length * 8, 30);
-  const finalScore = Math.max(0, Math.min(100, Math.round(baseScore + votingBonus - pacPenalty - industryPenalty)));
+  const industryPenalty = Math.min(controversialIndustries.length * 6, 18);
+  const raw = baseScore + votingBonus - pacPenalty - industryPenalty;
+  const finalScore = Math.max(8, Math.min(100, Math.round(raw)));
   return { baseScore, outsideMoneyPercent, votingBonus, lobbyistMeetingPenalty: pacPenalty, controversialIndustryPenalty: industryPenalty, finalScore };
 }
 
@@ -797,10 +798,32 @@ async function main() {
       industryBreakdownCount: industryBreakdown.length,
     });
 
+    const bioSnippet = (() => {
+      const parts = [];
+      const firstStart = leg.terms?.[0]?.start;
+      if (firstStart) {
+        const since = firstStart.slice(0, 4);
+        const years = new Date().getFullYear() - parseInt(since, 10);
+        parts.push(`In Congress since ${since} (${years}+ years)`);
+      }
+      const leadership = (leg.leadership_roles || []).find(
+        (r) => !r.end || r.end >= "2025-01-01"
+      );
+      if (leadership?.title) parts.push(leadership.title);
+      if (term.type === "sen") parts.push(`U.S. Senator for ${term.state}`);
+      else {
+        const dist = term.district === 0 ? "at-large" : `District ${term.district}`;
+        parts.push(`U.S. Representative for ${term.state} (${dist})`);
+      }
+      return parts.join(" · ");
+    })();
+
     politicians.push({
       id: bio.toLowerCase(),
       bioguideId: bio,
       name,
+      bio: bioSnippet,
+      birthday: leg.bio?.birthday,
       party: normalizeParty(term.party),
       chamber: term.type === "sen" ? "Senate" : "House",
       state: term.state,

@@ -10,7 +10,8 @@
     "sync-data": "node --max-old-space-size=8192 scripts/sync-data.mjs",
     "sync-data:quick": "node --max-old-space-size=4096 scripts/sync-data.mjs --quick",
     "enrich-lobbying": "node scripts/enrich-lobbying.mjs",
-    "recalc-scores": "node scripts/recalc-scores.mjs"
+    "recalc-scores": "node scripts/recalc-scores.mjs",
+    "enrich-bios": "node scripts/enrich-bios.mjs"
   },
   "dependencies": {
     "react": "^18",

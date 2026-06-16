@@ -10,6 +10,50 @@ const INFLUENCE_WATCHLIST = [
   { id: "api", label: "American Petroleum Institute" },
 ] as const;
 
+export function getScoreTooltipLines(politician: Politician): string[] {
+  const bd = politician.scoreBreakdown;
+  const lines = [
+    `Base: ${bd.baseScore} (100 − ${bd.outsideMoneyPercent}% non-individual FEC)`,
+  ];
+  if (bd.votingBonus > 0) lines.push(`Voting bonus: +${bd.votingBonus}`);
+  if (bd.lobbyistMeetingPenalty > 0) {
+    lines.push(`PAC penalty: −${bd.lobbyistMeetingPenalty} (${politician.lobbyistMeetings}% PAC)`);
+  }
+  if (bd.controversialIndustryPenalty > 0) {
+    lines.push(`Industry penalty: −${bd.controversialIndustryPenalty}`);
+  }
+  if (bd.lobbyingExposurePenalty && bd.lobbyingExposurePenalty > 0) {
+    lines.push(`Lobbying exposure: −${bd.lobbyingExposurePenalty}`);
+  }
+  lines.push(`Final: ${bd.finalScore}/100`);
+  return lines;
+}
+
+export function getLeaderboardDonorTags(
+  politician: Politician,
+  variant: "clean" | "compromised"
+): string[] {
+  if (variant === "compromised") {
+    return getTopScoreHurters(politician);
+  }
+
+  const tags: string[] = [];
+  for (const donor of politician.topDonors.slice(0, 2)) {
+    const label =
+      donor.industry && donor.industry !== "Uncategorized"
+        ? `${donor.name} · ${donor.industry}`
+        : donor.name;
+    tags.push(`${label} (${formatCurrency(donor.amount)})`);
+  }
+  if (tags.length === 0 && politician.industryBreakdown?.length) {
+    for (const item of politician.industryBreakdown.slice(0, 2)) {
+      if (item.label === "Employer Not Disclosed") continue;
+      tags.push(`${item.label} (${item.percent}%)`);
+    }
+  }
+  return tags.slice(0, 2);
+}
+
 export function getTopScoreHurters(politician: Politician): string[] {
   const hurters: string[] = [];
   const { scoreBreakdown: bd } = politician;

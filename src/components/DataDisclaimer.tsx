@@ -1,11 +1,13 @@
 import { dataMeta } from "@/data/politicians";
 
 export default function DataDisclaimer() {
+  const cycle = dataMeta?.cycle || "2024";
   const syncedDate = dataMeta?.syncedAt
     ? new Date(dataMeta.syncedAt).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
+        timeZone: "UTC",
       })
     : null;
 
@@ -14,7 +16,29 @@ export default function DataDisclaimer() {
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <p className="text-sm text-blue-200">
           <span className="font-semibold text-white">Live public data.</span>{" "}
-          FEC {dataMeta?.cycle || "2024"} cycle · Senate LDA lobbying ·{" "}
+          FEC {cycle} election cycle · refreshed from official bulk filings
+          {syncedDate ? (
+            <span className="text-blue-300/80"> (last pipeline run {syncedDate})</span>
+          ) : null}
+          . Sources:{" "}
+          <a
+            href="https://www.fec.gov/"
+            className="underline hover:text-white"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            FEC
+          </a>
+          ,{" "}
+          <a
+            href="https://lda.senate.gov/"
+            className="underline hover:text-white"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Senate LDA
+          </a>
+          ,{" "}
           <a
             href="https://www.govtrack.us/"
             className="underline hover:text-white"
@@ -22,8 +46,8 @@ export default function DataDisclaimer() {
             rel="noopener noreferrer"
           >
             GovTrack
-          </a>{" "}
-          votes ·{" "}
+          </a>
+          ,{" "}
           <a
             href="https://www.congress.gov/"
             className="underline hover:text-white"
@@ -31,14 +55,8 @@ export default function DataDisclaimer() {
             rel="noopener noreferrer"
           >
             Congress.gov
-          </a>{" "}
-          photos.
-          {syncedDate ? (
-            <span className="text-blue-300/80">
-              {" "}
-              Synced from public filings {syncedDate}.
-            </span>
-          ) : null}
+          </a>
+          .
         </p>
         <p className="shrink-0 text-xs text-blue-300/60">
           {dataMeta?.count || "—"} members · 137 tracked lobbying orgs

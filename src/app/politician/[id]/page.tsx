@@ -78,6 +78,11 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
               {politician.chamber} · {location}
             </span>
           </div>
+          {politician.bio && (
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              {politician.bio}
+            </p>
+          )}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-6 sm:justify-start">
             <span className="text-sm text-slate-400">
               National rank{" "}

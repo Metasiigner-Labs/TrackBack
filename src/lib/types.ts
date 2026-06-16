@@ -75,6 +75,8 @@ export interface Politician {
   chamber: Chamber;
   state: string;
   district?: string;
+  bio?: string;
+  birthday?: string;
   photoUrl: string;
   openSecretsUrl: string | null;
   fecUrl: string | null;
