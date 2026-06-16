@@ -111,6 +111,18 @@ export function classifySource(name, employer = "") {
 }
 
 export function isControversialIndustry(label) {
-  const controversial = ["Tobacco", "Fossil Fuels & Energy", "Private Prisons", "Pharma & Health", "Defense & Aerospace", "Pro-Israel Advocacy"];
+  const controversial = [
+    "Tobacco",
+    "Fossil Fuels & Energy",
+    "Private Prisons",
+    "Pharma & Health",
+    "Defense & Aerospace",
+    "Pro-Israel Advocacy",
+    "Finance & Fintech",
+    "Gun Rights",
+    "Hospitality & Tourism",
+    "Crypto & Blockchain",
+    "Business & Trade",
+  ];
   return controversial.some((c) => label.includes(c) || c.includes(label));
 }

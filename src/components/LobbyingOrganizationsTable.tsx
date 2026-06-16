@@ -9,12 +9,16 @@ const CONNECTION_LABELS: Record<LobbyingConnection, string> = {
   fec_donor: "FEC donor",
   lda_activity: "LDA filing",
   fec_and_lobbying: "FEC + LDA",
+  sector_exposure: "Sector money",
+  lda_and_sector: "LDA + sector",
 };
 
 const CONNECTION_STYLES: Record<LobbyingConnection, string> = {
   fec_donor: "bg-emerald-900/30 text-emerald-300",
   lda_activity: "bg-blue-900/30 text-blue-300",
   fec_and_lobbying: "bg-amber-900/30 text-amber-300",
+  sector_exposure: "bg-purple-900/30 text-purple-300",
+  lda_and_sector: "bg-rose-900/30 text-rose-300",
 };
 
 export default function LobbyingOrganizationsTable({
@@ -34,7 +38,7 @@ export default function LobbyingOrganizationsTable({
               Org lobbying (2024)
             </th>
             <th className="px-4 py-3 text-right font-medium text-slate-400">
-              FEC to candidate
+              Direct FEC $
             </th>
           </tr>
         </thead>

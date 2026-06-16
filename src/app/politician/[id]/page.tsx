@@ -199,9 +199,10 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
               Registered Lobbying Organizations
             </h2>
             <p className="mt-1 text-sm text-slate-400">
-              Named lobbying groups linked to this office via FEC donor records
-              and Senate LDA filings — AIPAC, PhRMA, oil, pharma, defense,
-              tech, and other registered interests (2024 cycle).
+              {politician.lobbyingOrganizations.length} tracked influence
+              groups — pharma, oil, defense, finance, tech, prisons, tobacco,
+              unions, AIPAC, and more. Matched via FEC donors, sector exposure,
+              and Senate LDA filings (2024 cycle).
             </p>
             {politician.totalLobbyingExposure ? (
               <p className="mt-2 text-sm text-slate-400">

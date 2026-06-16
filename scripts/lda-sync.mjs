@@ -8,6 +8,8 @@ import {
 
 const LDA_BASE = "https://lda.senate.gov/api/v1/filings/";
 const LDA_YEAR = 2024;
+const SECTOR_EXPOSURE_MIN = 500;
+const MAX_ORGS_PER_POLITICIAN = 25;
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -153,9 +155,32 @@ function fecDonorMatch(politician, org) {
     }
   }
   for (const item of politician.industryBreakdown || []) {
-    if (fecTextMatchesOrg(item.label, org)) return { matched: true, detail: `FEC sector overlap: ${item.label}`, amount: item.amount };
+    if (fecTextMatchesOrg(item.label, org)) {
+      return { matched: true, detail: `FEC name match: ${item.label}`, amount: item.amount };
+    }
   }
   return { matched: false };
+}
+
+function sectorExposureMatch(politician, org) {
+  const item = (politician.industryBreakdown || []).find(
+    (i) => i.label === org.sector && i.amount >= SECTOR_EXPOSURE_MIN
+  );
+  if (!item) return { matched: false };
+  return {
+    matched: true,
+    detail: `FEC ${org.sector} money: $${Math.round(item.amount).toLocaleString()} (${item.percent}% of classified)`,
+    amount: item.amount,
+  };
+}
+
+function resolveConnection({ fec, lda, sector }) {
+  if (fec.matched && lda) return "fec_and_lobbying";
+  if (lda && sector.matched) return "lda_and_sector";
+  if (fec.matched) return "fec_donor";
+  if (lda) return "lda_activity";
+  if (sector.matched) return "sector_exposure";
+  return "fec_donor";
 }
 
 export async function buildLobbyingDataForPoliticians(politicians, cacheDir) {
@@ -164,12 +189,19 @@ export async function buildLobbyingDataForPoliticians(politicians, cacheDir) {
     return politicians.map((p) => ({ ...p, lobbyingOrganizations: p.lobbyingOrganizations || [] }));
   }
 
-  console.log("  LDA: fetching lobbying filings for known organizations...");
+  console.log(`  LDA: fetching filings for ${KNOWN_LOBBYING_ORGS.length} tracked organizations...`);
   const matchers = buildMemberMatchers(politicians);
   const orgMeta = new Map();
   const memberLdaHits = new Map();
+  let ldaFetched = 0;
 
   for (const org of KNOWN_LOBBYING_ORGS) {
+    const hasLda = org.ldaClientName || org.ldaRegistrantName;
+    if (!hasLda) {
+      orgMeta.set(org.id, { spend: 0, issues: [], filingCount: 0 });
+      continue;
+    }
+
     try {
       const filings = await fetchAllFilingsForOrg(org, cacheDir);
       const spend = sumLobbyingSpend(filings);
@@ -182,10 +214,14 @@ export async function buildLobbyingDataForPoliticians(politicians, cacheDir) {
         memberLdaHits.get(memberId).set(org.id, refs);
       }
 
-      console.log(`  LDA: ${org.label} — ${filings.length} filings, $${Math.round(spend).toLocaleString()} reported`);
+      ldaFetched++;
+      if (ldaFetched % 10 === 0 || filings.length > 0) {
+        console.log(`  LDA [${ldaFetched}]: ${org.label} — ${filings.length} filings, $${Math.round(spend).toLocaleString()}`);
+      }
       await sleep(500);
     } catch (err) {
       console.warn(`  LDA: ${org.label} skipped — ${err.message}`);
+      orgMeta.set(org.id, { spend: 0, issues: [], filingCount: 0 });
     }
   }
 
@@ -196,19 +232,22 @@ export async function buildLobbyingDataForPoliticians(politicians, cacheDir) {
     for (const org of KNOWN_LOBBYING_ORGS) {
       const meta = orgMeta.get(org.id);
       const fec = fecDonorMatch(p, org);
+      const sector = fec.matched ? { matched: false } : sectorExposureMatch(p, org);
       const lda = ldaHits?.get(org.id);
 
-      if (!fec.matched && !lda) continue;
+      if (!fec.matched && !lda && !sector.matched) continue;
 
-      let connection = "lda_activity";
-      if (fec.matched && lda) connection = "fec_and_lobbying";
-      else if (fec.matched) connection = "fec_donor";
+      const connection = resolveConnection({ fec, lda, sector });
 
       const details = [];
       if (fec.matched) details.push(fec.detail);
+      else if (sector.matched) details.push(sector.detail);
       if (lda?.length) {
         details.push(`Referenced in ${lda.length} LDA filing(s) — lobbyist ties to this office`);
       }
+
+      // Sector exposure is contextual — don't repeat full sector FEC total per org row
+      const fecAmount = fec.matched ? fec.amount || 0 : 0;
 
       orgs.push({
         id: org.id,
@@ -219,7 +258,7 @@ export async function buildLobbyingDataForPoliticians(politicians, cacheDir) {
         filingCount: meta?.filingCount || 0,
         issues: meta?.issues || [],
         detail: details.join(". "),
-        fecAmount: fec.amount || 0,
+        fecAmount,
       });
     }
 
@@ -227,7 +266,7 @@ export async function buildLobbyingDataForPoliticians(politicians, cacheDir) {
 
     return {
       ...p,
-      lobbyingOrganizations: orgs.slice(0, 12),
+      lobbyingOrganizations: orgs.slice(0, MAX_ORGS_PER_POLITICIAN),
       totalLobbyingExposure: orgs.reduce((s, o) => s + (o.lobbyingSpend2024 || 0), 0),
     };
   });

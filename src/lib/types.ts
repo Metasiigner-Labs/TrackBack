@@ -24,7 +24,12 @@ export interface OutsideSpending {
   isProIsraelAdvocacy?: boolean;
 }
 
-export type LobbyingConnection = "fec_donor" | "lda_activity" | "fec_and_lobbying";
+export type LobbyingConnection =
+  | "fec_donor"
+  | "lda_activity"
+  | "fec_and_lobbying"
+  | "sector_exposure"
+  | "lda_and_sector";
 
 export interface LobbyingOrganization {
   id: string;
