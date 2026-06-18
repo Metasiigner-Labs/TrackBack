@@ -5,6 +5,7 @@ import {
   getLeaderboardDonorTags,
   getScoreSummaryLine,
 } from "@/lib/score-summary";
+import { PURITY_SCORE_OPINION_NOTICE } from "@/lib/compliance";
 import LeaderboardScoreTooltip from "./LeaderboardScoreTooltip";
 import PartyBadge from "./PartyBadge";
 
@@ -38,6 +39,11 @@ export default function Leaderboard({
             ? "Highest Purity Scores — hover score for FEC formula"
             : "Lowest Purity Scores — top industries & donors dragging score"}
         </p>
+        {variant === "compromised" && (
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            {PURITY_SCORE_OPINION_NOTICE}
+          </p>
+        )}
       </div>
       <ol className="divide-y divide-slate-800">
         {politicians.map((politician, index) => {

@@ -272,12 +272,12 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
             <p className="mt-3 text-xs text-slate-600">
               Source:{" "}
               <a
-                href="https://lda.senate.gov/"
+                href="https://lda.gov/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 underline hover:text-blue-400"
               >
-                Senate LDA disclosures
+                LDA.gov disclosures
               </a>{" "}
               + FEC itemized contributions.
             </p>

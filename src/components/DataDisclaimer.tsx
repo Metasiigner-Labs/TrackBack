@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { dataMeta } from "@/data/politicians";
+import { NON_MONETIZATION_PLEDGE } from "@/lib/compliance";
 
 export default function DataDisclaimer() {
   const cycle = dataMeta?.cycle || "2024";
@@ -31,12 +33,12 @@ export default function DataDisclaimer() {
           </a>
           ,{" "}
           <a
-            href="https://lda.senate.gov/"
+            href="https://lda.gov/"
             className="underline hover:text-white"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Senate LDA
+            LDA.gov
           </a>
           ,{" "}
           <a
@@ -59,7 +61,15 @@ export default function DataDisclaimer() {
           .
         </p>
         <p className="shrink-0 text-xs text-blue-300/60">
-          {dataMeta?.count || "—"} members · 137 tracked lobbying orgs
+          {dataMeta?.count || "—"} members · 137 lobbying orgs ·{" "}
+          <Link href="/legal" className="underline hover:text-blue-200">
+            Legal &amp; commitments
+          </Link>
+        </p>
+      </div>
+      <div className="mx-auto max-w-7xl px-4 pb-2 sm:px-6 lg:px-8">
+        <p className="text-center text-xs text-blue-300/50 sm:text-left">
+          {NON_MONETIZATION_PLEDGE}
         </p>
       </div>
     </div>

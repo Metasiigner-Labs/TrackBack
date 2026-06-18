@@ -1,3 +1,4 @@
+import { LDA_DERIVATION_NOTICE } from "@/lib/compliance";
 import type { LobbyingConnection, LobbyingOrganization } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export default function LobbyingOrganizationsTable({
   organizations,
 }: LobbyingOrganizationsTableProps) {
   return (
+    <div>
     <div className="overflow-x-auto rounded-lg border border-slate-800">
       <table className="w-full text-left text-sm">
         <thead>
@@ -86,6 +88,10 @@ export default function LobbyingOrganizationsTable({
           ))}
         </tbody>
       </table>
+    </div>
+    <p className="mt-2 text-xs leading-relaxed text-slate-600">
+      {LDA_DERIVATION_NOTICE}
+    </p>
     </div>
   );
 }

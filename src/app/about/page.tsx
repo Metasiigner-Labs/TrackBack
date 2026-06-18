@@ -1,6 +1,11 @@
 import Link from "next/link";
-import { PURITY_SCORE_EXPLANATION } from "@/lib/purity-score";
 import { dataMeta } from "@/data/politicians";
+import {
+  FEC_CONTRIBUTOR_NOTICE,
+  NON_MONETIZATION_PLEDGE,
+  PURITY_SCORE_OPINION_NOTICE,
+} from "@/lib/compliance";
+import { PURITY_SCORE_EXPLANATION } from "@/lib/purity-score";
 
 export default function AboutPage() {
   return (
@@ -24,7 +29,7 @@ export default function AboutPage() {
           <li>Committee & PAC contributions (FEC pas2 bulk data)</li>
           <li>Itemized individual donors with employers (FEC indiv)</li>
           <li>Outside super PAC spending for/against candidates (FEC IE)</li>
-          <li>137 registered lobbying organizations via Senate LDA</li>
+          <li>137 registered lobbying organizations via LDA.gov</li>
           <li>Pro-Israel advocacy spenders: UDP, DMFI, NorPAC, AIPAC-affiliated PACs</li>
           <li>Pharma, oil, defense, finance, tech, prisons, tobacco, unions, and more</li>
           <li>Nay votes on donor-aligned legislation (GovTrack roll calls)</li>
@@ -55,6 +60,18 @@ export default function AboutPage() {
             FEC matches to influence groups, or pro-Israel outside spending.
           </p>
         </div>
+      </section>
+
+      <section className="mt-10 rounded-xl border border-slate-800 bg-slate-900/30 p-6 text-sm text-slate-400">
+        <h2 className="text-lg font-semibold text-white">Commitments</h2>
+        <p className="mt-3 text-slate-300">{NON_MONETIZATION_PLEDGE}</p>
+        <p className="mt-4">{FEC_CONTRIBUTOR_NOTICE}</p>
+        <p className="mt-4">{PURITY_SCORE_OPINION_NOTICE}</p>
+        <p className="mt-4">
+          <Link href="/legal" className="text-blue-400 underline hover:text-blue-300">
+            Full legal &amp; commitments page →
+          </Link>
+        </p>
       </section>
 
       <section className="mt-10 text-sm text-slate-500">

@@ -1,3 +1,4 @@
+import { PURITY_SCORE_OPINION_NOTICE } from "@/lib/compliance";
 import type { ScoreBreakdown as ScoreBreakdownType } from "@/lib/types";
 
 interface ScoreBreakdownProps {
@@ -55,6 +56,7 @@ export default function ScoreBreakdown({
       <p className="mt-1 text-sm text-slate-400">
         Calculated from official FEC filings and GovTrack voting records
       </p>
+      <p className="mt-2 text-xs text-slate-500">{PURITY_SCORE_OPINION_NOTICE}</p>
 
       <div className="mt-6 space-y-4">
         {items.map((item) => (

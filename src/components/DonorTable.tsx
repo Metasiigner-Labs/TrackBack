@@ -1,4 +1,5 @@
 import type { Donor } from "@/lib/types";
+import { FEC_CONTRIBUTOR_NOTICE } from "@/lib/compliance";
 import { formatCurrency } from "@/lib/utils";
 
 interface DonorTableProps {
@@ -15,6 +16,7 @@ export default function DonorTable({
   const displayed = limit ? donors.slice(0, limit) : donors;
 
   return (
+    <div>
     <div className="overflow-x-auto rounded-lg border border-slate-800">
       <table className="w-full text-left text-sm">
         <thead>
@@ -68,6 +70,10 @@ export default function DonorTable({
           ))}
         </tbody>
       </table>
+    </div>
+    <p className="mt-2 text-xs leading-relaxed text-slate-600">
+      {FEC_CONTRIBUTOR_NOTICE}
+    </p>
     </div>
   );
 }

@@ -1,12 +1,26 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import {
   KNOWN_LOBBYING_ORGS,
   fecTextMatchesOrg,
   normalizeForMatch,
 } from "./lobbying-orgs.mjs";
 
-const LDA_BASE = "https://lda.senate.gov/api/v1/filings/";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, "..");
+
+function loadEnv() {
+  const envPath = join(ROOT, ".env.local");
+  if (!existsSync(envPath)) return;
+  for (const line of readFileSync(envPath, "utf8").split("\n")) {
+    const m = line.match(/^([^#=]+)=(.*)$/);
+    if (m) process.env[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, "");
+  }
+}
+loadEnv();
+
+const LDA_BASE = "https://lda.gov/api/v1/filings/";
 const LDA_YEAR = 2024;
 const SECTOR_EXPOSURE_MIN = 500;
 const MAX_ORGS_PER_POLITICIAN = 25;
@@ -48,12 +62,19 @@ function textMentionsMember(text, matcher) {
   return matcher.patterns.some((p) => norm.includes(p)) || norm.includes(matcher.lastName.toLowerCase());
 }
 
+function ldaHeaders() {
+  const headers = { Accept: "application/json" };
+  const apiKey = process.env.LDA_API_KEY?.trim();
+  if (apiKey) headers.Authorization = `Token ${apiKey}`;
+  return headers;
+}
+
 async function fetchLdaPage(params, attempt = 0) {
   const url = new URL(LDA_BASE);
   for (const [k, v] of Object.entries(params)) {
     if (v) url.searchParams.set(k, String(v));
   }
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  const res = await fetch(url, { headers: ldaHeaders() });
   if (res.status === 429 && attempt < 6) {
     const wait = 2000 * 2 ** attempt;
     await sleep(wait);
@@ -243,7 +264,9 @@ export async function buildLobbyingDataForPoliticians(politicians, cacheDir) {
       if (fec.matched) details.push(fec.detail);
       else if (sector.matched) details.push(sector.detail);
       if (lda?.length) {
-        details.push(`Referenced in ${lda.length} LDA filing(s) — lobbyist ties to this office`);
+        details.push(
+          `Name referenced in ${lda.length} LDA filing(s) — verify in source filing at LDA.gov`
+        );
       }
 
       // Sector exposure is contextual — don't repeat full sector FEC total per org row

@@ -11,7 +11,7 @@ const CACHE = join(ROOT, "scripts", "cache");
 const OUT_FILE = join(ROOT, "src", "data", "politicians.json");
 
 const data = JSON.parse(readFileSync(OUT_FILE, "utf8"));
-const ldaSource = "Senate LDA API — registered lobbying organizations (lda.senate.gov)";
+const ldaSource = "LDA.gov API — registered lobbying organizations (lda.gov)";
 if (!data.meta.sources.includes(ldaSource)) {
   data.meta.sources.push(ldaSource);
 }

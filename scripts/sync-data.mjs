@@ -871,7 +871,7 @@ async function main() {
         "unitedstates/congress-legislators (public domain)",
         "GovTrack.us — roll call voting records",
         "Congress.gov Bioguide — official photos",
-        "Senate LDA API — registered lobbying organizations (lda.senate.gov)",
+        "LDA.gov API — registered lobbying organizations (lda.gov)",
       ],
     },
     politicians: politiciansWithLobbying,

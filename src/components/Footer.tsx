@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { dataMeta } from "@/data/politicians";
+import { GITHUB_URL, NON_MONETIZATION_PLEDGE } from "@/lib/compliance";
 
 export default function Footer() {
   return (
@@ -41,6 +42,21 @@ export default function Footer() {
                   About & methodology
                 </Link>
               </li>
+              <li>
+                <Link href="/legal" className="hover:text-white">
+                  Legal & commitments
+                </Link>
+              </li>
+              <li>
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                >
+                  Open source (GitHub)
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -48,7 +64,7 @@ export default function Footer() {
             <p className="text-sm font-semibold text-white">Data sources</p>
             <ul className="mt-3 space-y-1 text-xs text-slate-500">
               <li>FEC — campaign contributions & independent expenditures</li>
-              <li>Senate LDA — registered lobbying disclosures</li>
+              <li>LDA.gov — registered lobbying disclosures</li>
               <li>GovTrack — roll call voting records</li>
               <li>Congress.gov — official member photos</li>
               <li>U.S. Census — zip code to congressional district</li>
@@ -57,9 +73,12 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 border-t border-slate-800 pt-6 text-center text-xs text-slate-600">
-          © {new Date().getFullYear()} TrackBack · {dataMeta?.count || "—"} members ·
-          FEC {dataMeta?.cycle || "2024"} cycle · Not affiliated with any government
-          agency.
+          <p>{NON_MONETIZATION_PLEDGE}</p>
+          <p className="mt-2">
+            © {new Date().getFullYear()} TrackBack · {dataMeta?.count || "—"} members ·
+            FEC {dataMeta?.cycle || "2024"} cycle · Not affiliated with any government
+            agency.
+          </p>
         </div>
       </div>
     </footer>
