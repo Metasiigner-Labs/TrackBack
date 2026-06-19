@@ -17,12 +17,42 @@ export default function ScoreBreakdown({
       description: `100 − ${breakdown.outsideMoneyPercent}% non-individual contributions (FEC)`,
       positive: true,
     },
+    ...(breakdown.smallDonorBonus
+      ? [
+          {
+            label: "Small-Donor Bonus",
+            value: breakdown.smallDonorBonus,
+            description: "High share of itemized individual FEC contributions",
+            positive: true as const,
+          },
+        ]
+      : []),
     {
       label: "Voting Bonus",
       value: breakdown.votingBonus,
-      description: "Nay votes against top-donor industry interests (GovTrack)",
+      description: "Nay votes clearly tied to top-donor industries (GovTrack)",
       positive: true,
     },
+    ...(breakdown.ld203Penalty
+      ? [
+          {
+            label: "LD-203 Lobbyist $ Penalty",
+            value: -breakdown.ld203Penalty,
+            description: "Lobbyist-hosted contributions to this official (LDA.gov)",
+            positive: false as const,
+          },
+        ]
+      : []),
+    ...(breakdown.outsideSpendingPenalty
+      ? [
+          {
+            label: "Outside Spending Penalty",
+            value: -breakdown.outsideSpendingPenalty,
+            description: "Super PAC independent expenditure ratio vs receipts (FEC)",
+            positive: false as const,
+          },
+        ]
+      : []),
     {
       label: "PAC Dependence Penalty",
       value: -breakdown.lobbyistMeetingPenalty,

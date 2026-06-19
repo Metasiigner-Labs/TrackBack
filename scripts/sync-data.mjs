@@ -21,6 +21,7 @@ import { Readable } from "stream";
 import { createWriteStream } from "fs";
 import { classifySource, isControversialIndustry, INDUSTRY_TAXONOMY } from "./industry-taxonomy.mjs";
 import { buildLobbyingDataForPoliticians } from "./lda-sync.mjs";
+import { buildLd203DataForPoliticians } from "./ld203-sync.mjs";
 import { calculatePurityScore } from "./score-algorithm.mjs";
 import { applyScoreRecalcToAll } from "./score-algorithm.mjs";
 
@@ -854,7 +855,8 @@ async function main() {
   politicians.filter((p) => !p.hasFinancialData).forEach((p) => { p.nationalRank = ranked.length + 1; });
 
   const withLobbying = await buildLobbyingDataForPoliticians(politicians, CACHE);
-  const politiciansWithLobbying = applyScoreRecalcToAll(withLobbying);
+  const withLd203 = await buildLd203DataForPoliticians(withLobbying, CACHE);
+  const politiciansWithLobbying = applyScoreRecalcToAll(withLd203);
 
   const output = {
     meta: {
@@ -872,6 +874,7 @@ async function main() {
         "GovTrack.us — roll call voting records",
         "Congress.gov Bioguide — official photos",
         "LDA.gov API — registered lobbying organizations (lda.gov)",
+        "LDA.gov LD-203 — lobbyist contributions to officials (lda.gov)",
       ],
     },
     politicians: politiciansWithLobbying,

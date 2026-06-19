@@ -5,9 +5,9 @@ export const PURITY_SCORE_EXPLANATION = {
   formula:
     "Base score = 100 minus the percentage of total receipts from non-individual sources (PACs, party committees, transfers) per FEC filings. This is the primary signal — we do not double-penalize the same PAC money twice.",
   bonuses:
-    "Nay votes on legislation aligned with top donor industries add 8–15 points (GovTrack roll calls).",
+    "Small-donor bonus (+3 to +8) when itemized individual FEC money is a large share of receipts. Voting bonus (+3 to +8) only for Nay votes clearly tied to a top donor industry (GovTrack).",
   penalties:
-    "Additional deductions only for independent signals: excess PAC dependence beyond the base share, controversial industries (tobacco, oil, prisons, pharma, defense, pro-Israel advocacy), and direct lobbying ties (FEC + Senate LDA matches to groups like AIPAC, UDP, DMFI, NorPAC). Scores spread naturally — no mass floor at zero.",
+    "LD-203 lobbyist contributions (−3 to −15), outside super PAC spending ratio (−4 to −12), excess PAC dependence, controversial industries, and tracked lobbying org ties (FEC + LDA.gov). Scores cap at 95 unless outside money, LD-203, and lobbying exposure are all minimal.",
 };
 
 export function getScoreColor(score: number): string {

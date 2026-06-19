@@ -15,7 +15,16 @@ export function getScoreTooltipLines(politician: Politician): string[] {
   const lines = [
     `Base: ${bd.baseScore} (100 − ${bd.outsideMoneyPercent}% non-individual FEC)`,
   ];
+  if (bd.smallDonorBonus && bd.smallDonorBonus > 0) {
+    lines.push(`Small-donor bonus: +${bd.smallDonorBonus}`);
+  }
   if (bd.votingBonus > 0) lines.push(`Voting bonus: +${bd.votingBonus}`);
+  if (bd.ld203Penalty && bd.ld203Penalty > 0) {
+    lines.push(`LD-203 lobbyist $: −${bd.ld203Penalty}`);
+  }
+  if (bd.outsideSpendingPenalty && bd.outsideSpendingPenalty > 0) {
+    lines.push(`Outside spend ratio: −${bd.outsideSpendingPenalty}`);
+  }
   if (bd.lobbyistMeetingPenalty > 0) {
     lines.push(`PAC penalty: −${bd.lobbyistMeetingPenalty} (${politician.lobbyistMeetings}% PAC)`);
   }
@@ -75,6 +84,12 @@ export function getTopScoreHurters(politician: Politician): string[] {
   }
   if ((bd.lobbyingExposurePenalty || 0) > 0) {
     hurters.push("registered lobbying exposure");
+  }
+  if ((bd.ld203Penalty || 0) > 0) {
+    hurters.push("LD-203 lobbyist contributions");
+  }
+  if ((bd.outsideSpendingPenalty || 0) > 0) {
+    hurters.push(`${politician.outsideSpendingPercent || 0}% outside super PAC spend`);
   }
 
   return Array.from(new Set(hurters)).slice(0, 2);

@@ -30,6 +30,8 @@ export default function AboutPage() {
           <li>Itemized individual donors with employers (FEC indiv)</li>
           <li>Outside super PAC spending for/against candidates (FEC IE)</li>
           <li>137 registered lobbying organizations via LDA.gov</li>
+          <li>LD-203 lobbyist contributions to officials (LDA.gov)</li>
+          <li>Small-donor share and outside super PAC spending ratios (FEC)</li>
           <li>Pro-Israel advocacy spenders: UDP, DMFI, NorPAC, AIPAC-affiliated PACs</li>
           <li>Pharma, oil, defense, finance, tech, prisons, tobacco, unions, and more</li>
           <li>Nay votes on donor-aligned legislation (GovTrack roll calls)</li>

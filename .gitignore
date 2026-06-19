@@ -37,3 +37,5 @@ next-env.d.ts
 
 # sync cache (bulk downloads)
 /scripts/cache/
+
+.vercel

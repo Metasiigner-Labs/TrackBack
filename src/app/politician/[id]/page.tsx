@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import DonorTable from "@/components/DonorTable";
 import IndustryBreakdown from "@/components/IndustryBreakdown";
 import LobbyingOrganizationsTable from "@/components/LobbyingOrganizationsTable";
+import LobbyistContributionsTable from "@/components/LobbyistContributionsTable";
 import OutsideSpendingTable from "@/components/OutsideSpendingTable";
 import PartyBadge from "@/components/PartyBadge";
 import PurityScoreDisplay from "@/components/PurityScoreDisplay";
@@ -240,6 +241,55 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
           ) : null}
           <div className="mt-6">
             <OutsideSpendingTable spending={politician.outsideSpending} />
+          </div>
+        </section>
+      )}
+
+      {politician.lobbyistContributions &&
+        politician.lobbyistContributions.eventCount > 0 && (
+          <section className="mt-12">
+            <h2 className="text-xl font-bold text-white">
+              Lobbyist Contributions (LD-203)
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Direct lobbyist-hosted contributions to this official — public LDA.gov
+              LD-203 filings (2024).
+            </p>
+            <div className="mt-6">
+              <LobbyistContributionsTable
+                total2024={politician.lobbyistContributions.total2024}
+                eventCount={politician.lobbyistContributions.eventCount}
+                events={politician.lobbyistContributions.events}
+              />
+            </div>
+          </section>
+        )}
+
+      {(politician.smallDonorPercent !== undefined ||
+        politician.outsideSpendingPercent !== undefined) && (
+        <section className="mt-12 rounded-xl border border-slate-800 bg-slate-900/40 p-6">
+          <h2 className="text-lg font-semibold text-white">Money mix</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {politician.smallDonorPercent !== undefined && (
+              <div>
+                <p className="text-xs uppercase tracking-wider text-slate-500">
+                  Itemized individual share
+                </p>
+                <p className="mt-1 font-mono text-2xl text-emerald-400">
+                  {politician.smallDonorPercent}%
+                </p>
+              </div>
+            )}
+            {politician.outsideSpendingPercent !== undefined && (
+              <div>
+                <p className="text-xs uppercase tracking-wider text-slate-500">
+                  Outside super PAC spend ratio
+                </p>
+                <p className="mt-1 font-mono text-2xl text-amber-400">
+                  {politician.outsideSpendingPercent}%
+                </p>
+              </div>
+            )}
           </div>
         </section>
       )}

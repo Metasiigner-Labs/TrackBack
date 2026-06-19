@@ -1,9 +1,9 @@
 /**
  * Purity Score — single source of truth
  *
- * Design: base score already reflects outside/PAC money share.
- * Additional penalties only fire for independent corruption signals
- * (controversial industries, direct lobbying ties, independence votes).
+ * Base score reflects outside/PAC money share. Additional signals:
+ * independence votes, LD-203 lobbyist $, outside super PAC ratio,
+ * small-donor share, controversial industries, lobbying org ties.
  */
 
 export function calcLobbyingExposurePenalty(politician) {
@@ -35,6 +35,28 @@ export function calcLobbyingExposurePenalty(politician) {
   return Math.min(penalty, 10);
 }
 
+export function countTrueIndependenceVotes(politician) {
+  return (politician.recentVotesAgainstDonors || []).filter(
+    (v) =>
+      v.donorAffected &&
+      v.donorAffected !== "Industry-aligned legislation" &&
+      v.vote === "Nay"
+  ).length;
+}
+
+export function computeDerivedMoneyMetrics(politician) {
+  const totalDonations = politician.totalDonations || 0;
+  const individualTotal = politician.individualContributionTotal || 0;
+  const outsideSpend = politician.totalOutsideSpending || 0;
+
+  const smallDonorPercent =
+    totalDonations > 0 ? Math.round((individualTotal / totalDonations) * 1000) / 10 : 0;
+  const outsideSpendingPercent =
+    totalDonations > 0 ? Math.round((outsideSpend / totalDonations) * 1000) / 10 : 0;
+
+  return { smallDonorPercent, outsideSpendingPercent };
+}
+
 export function calculatePurityScore(input) {
   const {
     totalOutsideMoney = 0,
@@ -43,6 +65,11 @@ export function calculatePurityScore(input) {
     controversialIndustries = [],
     independenceVotes = 0,
     lobbyingExposurePenalty = 0,
+    ld203Total = 0,
+    outsideSpendingPercent = 0,
+    smallDonorPercent = 0,
+    chamber = "House",
+    strongLobbyingOrgCount = 0,
     hasFinancialData = true,
   } = input;
 
@@ -54,6 +81,9 @@ export function calculatePurityScore(input) {
       lobbyistMeetingPenalty: 0,
       controversialIndustryPenalty: 0,
       lobbyingExposurePenalty: 0,
+      ld203Penalty: 0,
+      outsideSpendingPenalty: 0,
+      smallDonorBonus: 0,
       finalScore: 0,
     };
   }
@@ -63,12 +93,15 @@ export function calculatePurityScore(input) {
   const baseScore = Math.max(0, 100 - outsideMoneyPercent);
 
   let votingBonus = 0;
-  if (independenceVotes >= 5) votingBonus = 15;
-  else if (independenceVotes >= 3) votingBonus = 12;
-  else if (independenceVotes >= 1) votingBonus = 8;
+  if (independenceVotes >= 3) votingBonus = 8;
+  else if (independenceVotes >= 2) votingBonus = 5;
+  else if (independenceVotes >= 1) votingBonus = 3;
 
-  // Only penalize PAC dependence ABOVE what outside-money % already captures
-  const excessPac = Math.max(0, pacDependenceScore - Math.round(outsideMoneyPercent * 0.35));
+  const pacTolerance = chamber === "Senate" ? 3 : 0;
+  const excessPac = Math.max(
+    0,
+    pacDependenceScore - Math.round(outsideMoneyPercent * 0.35) - pacTolerance
+  );
   let lobbyistMeetingPenalty = 0;
   if (excessPac >= 25) lobbyistMeetingPenalty = 8;
   else if (excessPac >= 15) lobbyistMeetingPenalty = 5;
@@ -77,22 +110,49 @@ export function calculatePurityScore(input) {
   const controversialIndustryPenalty = Math.min(controversialIndustries.length * 4, 12);
   const lobbyingPenalty = Math.min(lobbyingExposurePenalty, 10);
 
+  let ld203Penalty = 0;
+  if (ld203Total >= 50_000) ld203Penalty = 15;
+  else if (ld203Total >= 20_000) ld203Penalty = 10;
+  else if (ld203Total >= 5_000) ld203Penalty = 6;
+  else if (ld203Total >= 1_000) ld203Penalty = 3;
+
+  let outsideSpendingPenalty = 0;
+  if (outsideSpendingPercent >= 50) outsideSpendingPenalty = 12;
+  else if (outsideSpendingPercent >= 30) outsideSpendingPenalty = 8;
+  else if (outsideSpendingPercent >= 20) outsideSpendingPenalty = 4;
+
+  let smallDonorBonus = 0;
+  if (smallDonorPercent >= 70) smallDonorBonus = 8;
+  else if (smallDonorPercent >= 50) smallDonorBonus = 5;
+  else if (smallDonorPercent >= 35) smallDonorBonus = 3;
+
   const raw =
     baseScore +
-    votingBonus -
+    votingBonus +
+    smallDonorBonus -
     lobbyistMeetingPenalty -
     controversialIndustryPenalty -
-    lobbyingPenalty;
+    lobbyingPenalty -
+    ld203Penalty -
+    outsideSpendingPenalty;
 
-  // No artificial floor — compress only extreme negatives so order is preserved
   let finalScore;
   if (raw >= 15) {
     finalScore = Math.min(100, Math.round(raw));
   } else if (raw >= 0) {
     finalScore = Math.round(raw);
   } else {
-    // e.g. raw -10 → 10, raw -25 → 5 — still differentiated, rarely literal 0
     finalScore = Math.max(5, Math.round(10 + raw * 0.35));
+  }
+
+  const exceptional =
+    outsideMoneyPercent < 5 &&
+    ld203Total === 0 &&
+    strongLobbyingOrgCount === 0 &&
+    outsideSpendingPercent < 10;
+
+  if (finalScore > 95 && !exceptional) {
+    finalScore = 95;
   }
 
   return {
@@ -102,17 +162,25 @@ export function calculatePurityScore(input) {
     lobbyistMeetingPenalty,
     controversialIndustryPenalty,
     lobbyingExposurePenalty: lobbyingPenalty,
+    ld203Penalty,
+    outsideSpendingPenalty,
+    smallDonorBonus,
     finalScore,
   };
 }
 
 export function recalculatePoliticianScore(politician) {
-  const independenceVotes = Math.min(
-    5,
-    (politician.recentVotesAgainstDonors || []).length
-  );
-
+  const independenceVotes = countTrueIndependenceVotes(politician);
   const lobbyingExposurePenalty = calcLobbyingExposurePenalty(politician);
+  const { smallDonorPercent, outsideSpendingPercent } = computeDerivedMoneyMetrics(politician);
+
+  politician.smallDonorPercent = smallDonorPercent;
+  politician.outsideSpendingPercent = outsideSpendingPercent;
+
+  const STRONG = new Set(["fec_donor", "fec_and_lobbying", "lda_activity", "lda_and_sector"]);
+  const strongLobbyingOrgCount = (politician.lobbyingOrganizations || []).filter((o) =>
+    STRONG.has(o.connection)
+  ).length;
 
   const breakdown = calculatePurityScore({
     totalOutsideMoney: politician.totalOutsideMoney,
@@ -121,6 +189,11 @@ export function recalculatePoliticianScore(politician) {
     controversialIndustries: politician.controversialIndustries || [],
     independenceVotes,
     lobbyingExposurePenalty,
+    ld203Total: politician.lobbyistContributions?.total2024 || 0,
+    outsideSpendingPercent,
+    smallDonorPercent,
+    chamber: politician.chamber,
+    strongLobbyingOrgCount,
     hasFinancialData: politician.hasFinancialData,
   });
 

@@ -52,6 +52,23 @@ export interface VoteAgainstDonor {
   description: string;
 }
 
+export interface LobbyistContributionEvent {
+  honoreeName: string;
+  payeeName: string;
+  lobbyistName: string;
+  registrantName: string;
+  amount: number;
+  date: string;
+  contributionType: string;
+  filingPeriod: string;
+}
+
+export interface LobbyistContributions {
+  total2024: number;
+  eventCount: number;
+  events: LobbyistContributionEvent[];
+}
+
 export interface ScoreBreakdown {
   baseScore: number;
   outsideMoneyPercent: number;
@@ -59,6 +76,9 @@ export interface ScoreBreakdown {
   lobbyistMeetingPenalty: number;
   controversialIndustryPenalty: number;
   lobbyingExposurePenalty?: number;
+  ld203Penalty?: number;
+  outsideSpendingPenalty?: number;
+  smallDonorBonus?: number;
   finalScore: number;
 }
 
@@ -103,5 +123,8 @@ export interface Politician {
   dataCompletenessTier?: "high" | "medium" | "low" | "insufficient";
   lobbyingOrganizations?: LobbyingOrganization[];
   totalLobbyingExposure?: number;
+  lobbyistContributions?: LobbyistContributions | null;
+  smallDonorPercent?: number;
+  outsideSpendingPercent?: number;
   lastSynced?: string;
 }
