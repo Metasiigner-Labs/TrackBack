@@ -8,6 +8,7 @@ export interface SourcesUpdated {
   votes?: string;
   lda?: string;
   ld203?: string;
+  stockAct?: string;
 }
 
 export interface PoliticiansDataset {

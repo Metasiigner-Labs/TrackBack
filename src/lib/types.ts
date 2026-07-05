@@ -69,6 +69,24 @@ export interface LobbyistContributions {
   events: LobbyistContributionEvent[];
 }
 
+export interface StockTrade {
+  transactionDate: string;
+  disclosureDate: string;
+  ticker: string | null;
+  assetDescription: string;
+  assetType: string;
+  type: string;
+  amount: string;
+  owner: string;
+  sourceUrl: string;
+}
+
+export interface StockTrades {
+  tradeCount: number;
+  lastDisclosureDate: string;
+  recentTrades: StockTrade[];
+}
+
 export interface ScoreBreakdown {
   baseScore: number;
   outsideMoneyPercent: number;
@@ -124,6 +142,8 @@ export interface Politician {
   lobbyingOrganizations?: LobbyingOrganization[];
   totalLobbyingExposure?: number;
   lobbyistContributions?: LobbyistContributions | null;
+  stockTrades?: StockTrades | null;
+  stockDisclosureUrl?: string;
   smallDonorPercent?: number;
   outsideSpendingPercent?: number;
   lastSynced?: string;

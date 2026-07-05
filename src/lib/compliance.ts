@@ -18,14 +18,19 @@ export const NON_AFFILIATION_NOTICE =
 export const DATA_ACCURACY_NOTICE =
   "Campaign finance and lobbying data may contain errors from source filings. Always verify amounts and connections via linked FEC, LDA.gov, and OpenSecrets records.";
 
+export const STOCK_ACT_NOTICE =
+  "Stock trades are from legally required Periodic Transaction Reports (PTR) filed with the House Clerk or Senate Office of Public Records. Amounts are reported as ranges per federal form — not exact values. TrackBack displays parsed public filings; verify via the linked official PDF.";
+
 export const COMPLETED_DATA_SOURCES = [
   "LD-203 lobbyist contributions to officials (LDA.gov)",
+  "STOCK Act House PTR trades (disclosures-clerk.house.gov)",
+  "Transparency hub — official .gov resource directory",
 ] as const;
 
 export const FUTURE_DATA_ROADMAP = [
   "Automated weekly GovTrack vote refresh (GitHub Actions)",
   "FEC 2026 election cycle bulk ingestion",
-  "STOCK Act periodic transaction reports",
+  "Senate PTR trade ingestion (efdsearch.senate.gov)",
   "FEC Schedule B committee disbursements",
   "Congressional financial disclosure forms",
   "DOJ FARA foreign lobbying registrations",

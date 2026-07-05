@@ -3,9 +3,10 @@ import Link from "next/link";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/#leaderboards", label: "Leaderboards" },
+  { href: "/transparency", label: "Transparency" },
+  { href: "/find", label: "Find My Reps" },
   { href: "/about", label: "About" },
   { href: "/legal", label: "Legal" },
-  { href: "/find", label: "Find My Reps" },
 ];
 
 export default function Header() {

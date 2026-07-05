@@ -14,6 +14,7 @@ import ScoreHistoryChart from "@/components/ScoreHistoryChart";
 import DataCompleteness from "@/components/DataCompleteness";
 import LobbyingHighlights from "@/components/LobbyingHighlights";
 import MoneySourceBar from "@/components/MoneySourceBar";
+import StockTradesTable from "@/components/StockTradesTable";
 import { dataMeta, politicians } from "@/data/politicians";
 import { formatSourceDate } from "@/lib/source-freshness";
 import {
@@ -277,6 +278,10 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
             </div>
           </section>
         )}
+
+      <section className="mt-12">
+        <StockTradesTable politician={politician} />
+      </section>
 
       {(politician.smallDonorPercent !== undefined ||
         politician.outsideSpendingPercent !== undefined) && (

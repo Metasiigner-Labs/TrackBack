@@ -17,6 +17,7 @@ export const SOURCE_LABELS: Record<keyof SourcesUpdated, string> = {
   votes: "GovTrack votes",
   lda: "LDA lobbying orgs",
   ld203: "LD-203 lobbyist contributions",
+  stockAct: "STOCK Act PTR trades",
 };
 
 export function getSourceFreshnessEntries(

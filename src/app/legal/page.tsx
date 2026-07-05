@@ -9,6 +9,7 @@ import {
   FUTURE_DATA_ROADMAP,
   GITHUB_URL,
   LDA_DERIVATION_NOTICE,
+  STOCK_ACT_NOTICE,
   NON_AFFILIATION_NOTICE,
   NON_MONETIZATION_PLEDGE,
   PURITY_SCORE_OPINION_NOTICE,
@@ -93,6 +94,32 @@ export default function LegalPage() {
             Labels such as &ldquo;Cleanest&rdquo; and &ldquo;Most
             Compromised&rdquo; reflect our scoring formula applied to public
             filings — not moral judgments or legal conclusions.
+          </p>
+        </Section>
+
+        <Section title="STOCK Act disclosures">
+          <p>{STOCK_ACT_NOTICE}</p>
+          <p>
+            House Periodic Transaction Reports are published by the{" "}
+            <a
+              href="https://disclosures-clerk.house.gov/FinancialDisclosure"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 underline hover:text-blue-300"
+            >
+              House Clerk
+            </a>
+            . Senate filings are searchable at{" "}
+            <a
+              href="https://efdsearch.senate.gov/search/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 underline hover:text-blue-300"
+            >
+              efdsearch.senate.gov
+            </a>
+            . TrackBack currently ingests House PTR trades; Senate automated
+            ingestion is on the roadmap.
           </p>
         </Section>
 

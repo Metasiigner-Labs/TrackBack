@@ -14,7 +14,8 @@
     "enrich-lobbying": "node scripts/enrich-lobbying.mjs",
     "enrich-ld203": "node scripts/enrich-ld203.mjs",
     "recalc-scores": "node scripts/recalc-scores.mjs",
-    "enrich-bios": "node scripts/enrich-bios.mjs"
+    "enrich-bios": "node scripts/enrich-bios.mjs",
+    "enrich-stock-act": "node scripts/stock-act-sync.mjs"
   },
   "dependencies": {
     "react": "^18",

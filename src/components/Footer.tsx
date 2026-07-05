@@ -38,6 +38,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/transparency" className="hover:text-white">
+                  Transparency hub
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="hover:text-white">
                   About & methodology
                 </Link>
