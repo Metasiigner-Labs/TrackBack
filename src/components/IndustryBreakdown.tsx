@@ -1,3 +1,4 @@
+import { SectorIcon } from "@/components/icons/SectorIcons";
 import type { IndustryBreakdownItem } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
@@ -80,7 +81,16 @@ export default function IndustryBreakdown({
                   className="border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30"
                 >
                   <td className="px-4 py-3">
-                    <span className="font-medium text-white">{item.label}</span>
+                    <span className="flex items-center gap-2.5 font-medium text-white">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-900 text-slate-300">
+                        <SectorIcon
+                          sectorId={item.id}
+                          label={item.label}
+                          className="h-4 w-4"
+                        />
+                      </span>
+                      {item.label}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">

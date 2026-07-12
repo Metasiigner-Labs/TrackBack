@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import CitizenVsInstitutionMeter from "@/components/CitizenVsInstitutionMeter";
 import type { Politician } from "@/lib/types";
-import { getScoreSummaryLine } from "@/lib/score-summary";
+import {
+  getIndividualVsPacPercent,
+  getScoreSummaryLine,
+} from "@/lib/score-summary";
 import { formatCurrency } from "@/lib/utils";
 import PartyBadge from "./PartyBadge";
 import PurityScoreDisplay from "./PurityScoreDisplay";
@@ -19,6 +23,7 @@ export default function PoliticianCard({ politician }: PoliticianCardProps) {
 
   const topDonors = politician.topDonors.slice(0, 2);
   const summary = getScoreSummaryLine(politician);
+  const moneySplit = getIndividualVsPacPercent(politician);
 
   return (
     <Link
@@ -55,6 +60,19 @@ export default function PoliticianCard({ politician }: PoliticianCardProps) {
           </div>
 
           <p className="mt-2 line-clamp-2 text-xs text-slate-400">{summary}</p>
+
+          {(moneySplit.individualAmount > 0 || moneySplit.pacAmount > 0) && (
+            <div className="mt-3">
+              <CitizenVsInstitutionMeter
+                size="compact"
+                individualPercent={moneySplit.individualPercent}
+                pacPercent={moneySplit.pacPercent}
+                individualAmount={moneySplit.individualAmount}
+                pacAmount={moneySplit.pacAmount}
+                cycle={politician.dataCycle}
+              />
+            </div>
+          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
             <span className="text-slate-400">

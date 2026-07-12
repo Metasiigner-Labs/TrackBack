@@ -13,6 +13,25 @@ body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
 }
 
+/* Soft civic stripe field — decorative geometry, not a flag reproduction */
+.tb-stripe-field {
+  background-image: repeating-linear-gradient(
+    -12deg,
+    transparent,
+    transparent 14px,
+    rgba(248, 250, 252, 0.45) 14px,
+    rgba(248, 250, 252, 0.45) 15px,
+    transparent 15px,
+    transparent 28px,
+    rgba(220, 38, 38, 0.35) 28px,
+    rgba(220, 38, 38, 0.35) 29px,
+    transparent 29px,
+    transparent 42px,
+    rgba(37, 99, 235, 0.3) 42px,
+    rgba(37, 99, 235, 0.3) 43px
+  );
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

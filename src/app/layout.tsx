@@ -17,9 +17,27 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "TrackBack — Congressional Money Accountability",
+  metadataBase: new URL("https://track-back-eight.vercel.app"),
+  title: {
+    default: "TrackBack — Congressional Money Accountability",
+    template: "%s | TrackBack",
+  },
   description:
-    "See how much special interest, lobbyist, and corporate money each member of Congress takes. Real data from the FEC and GovTrack. They track us. We track them back.",
+    "Citizen money vs institutional money for every member of Congress. Real FEC and GovTrack data. They track us. We track them back.",
+  openGraph: {
+    title: "TrackBack — They track us. We track them back.",
+    description:
+      "Public accountability for congressional money: people vs institutions, industry breakdowns, and votes — from legal public filings.",
+    siteName: "TrackBack",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TrackBack — They track us. We track them back.",
+    description:
+      "Citizen money vs institutional money. Every disclosed industry. Public FEC data.",
+  },
 };
 
 export default function RootLayout({

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,8 +14,10 @@ import ScoreChangeIndicator from "@/components/ScoreChangeIndicator";
 import ScoreHistoryChart from "@/components/ScoreHistoryChart";
 import DataCompleteness from "@/components/DataCompleteness";
 import LobbyingHighlights from "@/components/LobbyingHighlights";
-import MoneySourceBar from "@/components/MoneySourceBar";
+import CitizenVsInstitutionMeter from "@/components/CitizenVsInstitutionMeter";
+import ShareProfileButton from "@/components/ShareProfileButton";
 import StockTradesTable from "@/components/StockTradesTable";
+import { SectorIcon } from "@/components/icons/SectorIcons";
 import { dataMeta, politicians } from "@/data/politicians";
 import { formatSourceDate } from "@/lib/source-freshness";
 import {
@@ -31,6 +34,34 @@ interface PoliticianPageProps {
 
 export function generateStaticParams() {
   return politicians.map((p) => ({ id: p.id }));
+}
+
+export function generateMetadata({ params }: PoliticianPageProps): Metadata {
+  const politician = getPoliticianById(params.id, politicians);
+  if (!politician) {
+    return { title: "Member not found" };
+  }
+  const split = getIndividualVsPacPercent(politician);
+  const location =
+    politician.chamber === "House"
+      ? `${politician.state} District ${politician.district}`
+      : politician.state;
+  const title = `${politician.name} — Purity Score ${politician.purityScore}/100`;
+  const description = `${politician.name} (${politician.party}, ${politician.chamber}, ${location}). Citizen money ${split.individualPercent}% · institutions ${split.pacPercent}%. Public FEC data on TrackBack.`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
 }
 
 export default function PoliticianPage({ params }: PoliticianPageProps) {
@@ -114,7 +145,12 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
             </span>{" "}
             raised ({politician.dataCycle || "2024"} cycle, FEC)
           </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-3 sm:justify-start">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+            <ShareProfileButton
+              name={politician.name}
+              score={politician.purityScore}
+              path={`/politician/${politician.id}`}
+            />
             {politician.fecUrl && (
               <a
                 href={politician.fecUrl}
@@ -163,7 +199,7 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
       </div>
 
       <div className="mt-8">
-        <MoneySourceBar
+        <CitizenVsInstitutionMeter
           individualPercent={moneySplit.individualPercent}
           pacPercent={moneySplit.pacPercent}
           individualAmount={moneySplit.individualAmount}
@@ -215,8 +251,9 @@ export default function PoliticianPage({ params }: PoliticianPageProps) {
                 {politician.controversialIndustries.map((ind) => (
                   <span
                     key={ind}
-                    className="rounded-full border border-amber-500/30 bg-amber-950/30 px-3 py-1 text-xs font-medium text-amber-200"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-950/30 px-3 py-1 text-xs font-medium text-amber-200"
                   >
+                    <SectorIcon label={ind} className="h-3.5 w-3.5" />
                     {ind}
                   </span>
                 ))}

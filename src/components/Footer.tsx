@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TrackBackCrest from "@/components/TrackBackCrest";
 import { dataMeta } from "@/data/politicians";
 import { GITHUB_URL, NON_MONETIZATION_PLEDGE } from "@/lib/compliance";
 
@@ -8,14 +9,18 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
-            <p className="text-lg font-bold text-white">
-              Track<span className="text-red-400">Back</span>
-            </p>
+            <div className="flex items-center gap-2.5">
+              <TrackBackCrest size="sm" />
+              <p className="text-lg font-bold text-white">
+                Track<span className="text-red-400">Back</span>
+              </p>
+            </div>
             <p className="mt-2 text-sm text-slate-400">
               They track us. We track them back.
             </p>
             <p className="mt-2 text-xs text-slate-500">
-              Public accountability for congressional money — no accounts, no spin.
+              Citizen money vs institutional money — no accounts, no spin.
+              Original icons only; no corporate logos or foreign flags.
             </p>
           </div>
 
