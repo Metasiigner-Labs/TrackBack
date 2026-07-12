@@ -11,6 +11,8 @@ import {
   createReadStream,
   statSync,
   unlinkSync,
+  readdirSync,
+  createWriteStream,
 } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -18,7 +20,6 @@ import { execSync } from "child_process";
 import { createInterface } from "readline";
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
-import { createWriteStream } from "fs";
 import { classifySource, isControversialIndustry, INDUSTRY_TAXONOMY } from "./industry-taxonomy.mjs";
 import { buildLobbyingDataForPoliticians } from "./lda-sync.mjs";
 import { buildLd203DataForPoliticians } from "./ld203-sync.mjs";
@@ -101,17 +102,47 @@ function releaseLock() {
   }
 }
 
-async function downloadFile(url, dest, minBytes = 100) {
+const FETCH_HEADERS = {
+  "User-Agent": "TrackBack/1.0 (public accountability; https://github.com/RealMetasiigner/TrackBack)",
+  Accept: "*/*",
+};
+
+async function downloadFile(url, dest, minBytes = 100, attempts = 3) {
   if (existsSync(dest) && statSync(dest).size >= minBytes) {
     console.log(`  Cache hit: ${dest.split(/[/\\]/).pop()}`);
     return dest;
   }
   console.log(`  Downloading ${url.split("/").pop()}...`);
-  const res = await fetch(url, { redirect: "follow" });
-  if (!res.ok) throw new Error(`Download failed ${url}: ${res.status}`);
-  if (!res.body) throw new Error(`Download failed ${url}: empty body`);
-  await pipeline(Readable.fromWeb(res.body), createWriteStream(dest));
-  return dest;
+  let lastErr;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const res = await fetch(url, { redirect: "follow", headers: FETCH_HEADERS });
+      if (!res.ok) throw new Error(`Download failed ${url}: ${res.status}`);
+      if (!res.body) throw new Error(`Download failed ${url}: empty body`);
+      await pipeline(Readable.fromWeb(res.body), createWriteStream(dest));
+      const size = statSync(dest).size;
+      if (size < minBytes) {
+        unlinkSync(dest);
+        throw new Error(`Download too small (${size} < ${minBytes}): ${url}`);
+      }
+      return dest;
+    } catch (err) {
+      lastErr = err;
+      if (existsSync(dest)) {
+        try {
+          unlinkSync(dest);
+        } catch {
+          /* ignore */
+        }
+      }
+      if (attempt < attempts - 1) {
+        const wait = 1500 * 2 ** attempt;
+        console.warn(`  Retry ${attempt + 1}/${attempts} after ${wait}ms: ${err.message}`);
+        await sleep(wait);
+      }
+    }
+  }
+  throw lastErr;
 }
 
 function parseCsvLine(line) {
@@ -183,34 +214,37 @@ function unzipFile(zipPath, outDir) {
   }
 }
 
-function findTxtInDir(dir, preferredName) {
-  const preferred = join(dir, preferredName);
-  if (existsSync(preferred)) return preferred;
-  const files = execSync(`dir /b "${dir}"`, { encoding: "utf8" })
-    .trim()
-    .split("\n")
-    .map((f) => f.trim())
-    .filter(Boolean);
-  const txt = files.find((f) => f.endsWith(".txt"));
-  if (!txt) throw new Error(`No .txt file in ${dir}`);
+/**
+ * Cross-platform: never use Windows `dir /b` (breaks GitHub Actions ubuntu runners).
+ * FEC bulk zips often use names like itpas2.txt / ccl.txt rather than pas224.txt / ccl24.txt.
+ */
+function listDirEntries(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).map((d) => d.name);
+}
+
+function findTxtInDir(dir, preferredNames = []) {
+  const names = Array.isArray(preferredNames) ? preferredNames : [preferredNames];
+  for (const name of names) {
+    if (!name) continue;
+    const preferred = join(dir, name);
+    if (existsSync(preferred)) return preferred;
+  }
+  const files = listDirEntries(dir);
+  const txt = files.find((f) => f.toLowerCase().endsWith(".txt"));
+  if (!txt) throw new Error(`No .txt file in ${dir} (found: ${files.join(", ") || "empty"})`);
   return join(dir, txt);
 }
 
 async function loadPas2Contributions() {
-  const url =
-    "https://www.fec.gov/files/bulk-downloads/2024/pas224.zip";
+  const url = "https://www.fec.gov/files/bulk-downloads/2024/pas224.zip";
   const zipDest = join(CACHE, "pas224.zip");
   const extractDir = join(CACHE, "pas224");
   await downloadFile(url, zipDest);
   unzipFile(zipDest, extractDir);
 
-  const txtFile = join(extractDir, "pas224.txt");
-  if (!existsSync(txtFile)) {
-    const files = execSync(`dir /b "${extractDir}"`, { encoding: "utf8" }).trim().split("\n");
-    const txt = files.find((f) => f.endsWith(".txt"));
-    if (!txt) throw new Error("pas224.txt not found in archive");
-    return loadPas2FromFile(join(extractDir, txt.trim()));
-  }
+  // FEC ships committee→candidate as itpas2.txt inside pas224.zip
+  const txtFile = findTxtInDir(extractDir, ["itpas2.txt", "pas224.txt", "itpas2.TXT"]);
   return loadPas2FromFile(txtFile);
 }
 
@@ -262,7 +296,8 @@ async function loadCclLinkages(targetCandIds) {
   await downloadFile(url, zipDest);
   unzipFile(zipDest, extractDir);
 
-  const txtFile = findTxtInDir(extractDir, `ccl${suffix}.txt`);
+  // FEC ccl zip typically extracts as ccl.txt (not always ccl24.txt)
+  const txtFile = findTxtInDir(extractDir, [`ccl${suffix}.txt`, "ccl.txt", `ccl${suffix}.TXT`]);
   const cmteToCands = new Map();
   const rl = createInterface({ input: createReadStream(txtFile), crlfDelay: Infinity });
 
@@ -630,9 +665,14 @@ async function fetchAllGovTrackRoles() {
   const roles = [];
   let offset = 0;
   while (true) {
-    const data = await fetch(`https://www.govtrack.us/api/v2/role?current=true&limit=100&offset=${offset}`).then((r) => r.json());
-    roles.push(...data.objects);
-    if (roles.length >= data.meta.total_count) break;
+    const res = await fetch(
+      `https://www.govtrack.us/api/v2/role?current=true&limit=100&offset=${offset}`,
+      { headers: FETCH_HEADERS }
+    );
+    if (!res.ok) throw new Error(`GovTrack roles failed: ${res.status}`);
+    const data = await res.json();
+    roles.push(...(data.objects || []));
+    if (!data.meta?.total_count || roles.length >= data.meta.total_count) break;
     offset += 100;
     await sleep(150);
   }
@@ -647,8 +687,10 @@ function govtrackPersonId(person) {
 async function fetchRecentVotes(personId, topDonors) {
   if (!personId) return [];
   const res = await fetch(
-    `https://www.govtrack.us/api/v2/vote_voter?person=${personId}&limit=40&created__gt=2024-01-01&sort=-created`
+    `https://www.govtrack.us/api/v2/vote_voter?person=${personId}&limit=40&created__gt=2024-01-01&sort=-created`,
+    { headers: FETCH_HEADERS }
   );
+  if (!res.ok) return [];
   const data = await res.json();
   const votes = [];
 
@@ -785,9 +827,14 @@ async function main() {
     (existingData?.politicians || []).map((p) => [p.id, p])
   );
 
-  const legislatorsRaw = await fetch(
-    "https://raw.githubusercontent.com/unitedstates/congress-legislators/gh-pages/legislators-current.json"
-  ).then((r) => r.json());
+  const legislatorsRes = await fetch(
+    "https://raw.githubusercontent.com/unitedstates/congress-legislators/gh-pages/legislators-current.json",
+    { headers: FETCH_HEADERS }
+  );
+  if (!legislatorsRes.ok) {
+    throw new Error(`Failed to fetch current legislators: ${legislatorsRes.status}`);
+  }
+  const legislatorsRaw = await legislatorsRes.json();
 
   const targetCandIds = new Set();
   for (const leg of legislatorsRaw) {

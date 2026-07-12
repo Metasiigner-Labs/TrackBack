@@ -25,6 +25,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Quick sync must be cross-platform (no Windows-only shell). Uses Node readdir for FEC extracts.
       - name: Quick sync (votes + FEC; preserve heavy sources)
         env:
           SKIP_INDIV_SYNC: "1"
@@ -46,3 +47,4 @@ jobs:
           git add src/data/politicians.json
           git commit -m "chore(data): weekly sync — GovTrack votes and FEC summaries"
           git push
+          echo "Pushed updated politicians.json"
