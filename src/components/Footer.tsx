@@ -79,6 +79,12 @@ export default function Footer() {
               <li>Congress.gov — official member photos</li>
               <li>U.S. Census — zip code to congressional district</li>
             </ul>
+            <p className="mt-4 text-sm font-semibold text-white">Sister project</p>
+            <p className="mt-2 text-xs text-slate-500">
+              <span className="text-amber-400/90">GuardBack</span> — parent action
+              hub for platform lockdowns, grooming playbooks, and official report
+              routing (CyberTipline / NCMEC). Open source · non-commercial.
+            </p>
           </div>
         </div>
 
