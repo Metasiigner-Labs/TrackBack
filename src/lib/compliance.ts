@@ -1,5 +1,9 @@
 export const GITHUB_URL = "https://github.com/RealMetasiigner/TrackBack";
 
+export const GUARDBACK_URL = "https://guardback.vercel.app";
+
+export const LABS_URL = "https://web-orcin-seven-85.vercel.app";
+
 export const NON_MONETIZATION_PLEDGE =
   "TrackBack is and will remain free, open source, and non-commercial. No advertising. No paywall. No paid data access. Ever.";
 

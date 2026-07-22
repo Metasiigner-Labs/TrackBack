@@ -6,6 +6,7 @@ import PurityScoreExplanation from "@/components/PurityScoreExplanation";
 import TrackBackCrest from "@/components/TrackBackCrest";
 import ZipSearchBar from "@/components/ZipSearchBar";
 import { politicians } from "@/data/politicians";
+import { GUARDBACK_URL, LABS_URL } from "@/lib/compliance";
 import {
   getCleanestPoliticians,
   getMostCompromisedPoliticians,
@@ -190,6 +191,50 @@ export default function HomePage() {
           >
             Open transparency hub →
           </Link>
+        </section>
+
+        <section className="grid gap-5 md:grid-cols-2">
+          <a
+            href={GUARDBACK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-slate-900/60 to-rose-950/20 p-8 transition hover:border-amber-400/50"
+          >
+            <p className="text-sm font-semibold uppercase tracking-widest text-amber-400">
+              Sister project
+            </p>
+            <h2 className="mt-2 text-2xl font-bold text-white group-hover:text-amber-50">
+              GuardBack
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Parent action hub — platform lockdowns, grooming playbooks, and a
+              report router to CyberTipline / NCMEC. Free, open source, same
+              mission energy.
+            </p>
+            <span className="mt-5 inline-block text-sm font-semibold text-amber-400">
+              Open GuardBack →
+            </span>
+          </a>
+          <a
+            href={LABS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 via-slate-900/60 to-slate-950 p-8 transition hover:border-cyan-400/50"
+          >
+            <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400">
+              Maker brand
+            </p>
+            <h2 className="mt-2 text-2xl font-bold text-white group-hover:text-cyan-50">
+              MetaSiigner Labs
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Factory to Freedom — local websites, 3D prints, home-lab systems,
+              and stream nights. The shop that funds the mission work.
+            </p>
+            <span className="mt-5 inline-block text-sm font-semibold text-cyan-400">
+              Visit Labs →
+            </span>
+          </a>
         </section>
       </div>
     </div>

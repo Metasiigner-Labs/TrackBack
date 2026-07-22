@@ -1,7 +1,12 @@
 import Link from "next/link";
 import TrackBackCrest from "@/components/TrackBackCrest";
 import { dataMeta } from "@/data/politicians";
-import { GITHUB_URL, NON_MONETIZATION_PLEDGE } from "@/lib/compliance";
+import {
+  GITHUB_URL,
+  GUARDBACK_URL,
+  LABS_URL,
+  NON_MONETIZATION_PLEDGE,
+} from "@/lib/compliance";
 
 export default function Footer() {
   return (
@@ -79,12 +84,34 @@ export default function Footer() {
               <li>Congress.gov — official member photos</li>
               <li>U.S. Census — zip code to congressional district</li>
             </ul>
-            <p className="mt-4 text-sm font-semibold text-white">Sister project</p>
-            <p className="mt-2 text-xs text-slate-500">
-              <span className="text-amber-400/90">GuardBack</span> — parent action
-              hub for platform lockdowns, grooming playbooks, and official report
-              routing (CyberTipline / NCMEC). Open source · non-commercial.
-            </p>
+            <p className="mt-4 text-sm font-semibold text-white">Sister projects</p>
+            <ul className="mt-2 space-y-2 text-xs text-slate-500">
+              <li>
+                <a
+                  href={GUARDBACK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-amber-400/90 hover:text-amber-300"
+                >
+                  GuardBack
+                </a>
+                {" — "}
+                parent action hub for platform lockdowns, grooming playbooks, and
+                official report routing (CyberTipline / NCMEC).
+              </li>
+              <li>
+                <a
+                  href={LABS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-cyan-400/90 hover:text-cyan-300"
+                >
+                  MetaSiigner Labs
+                </a>
+                {" — "}
+                maker shop, local websites, home lab, streams.
+              </li>
+            </ul>
           </div>
         </div>
 
